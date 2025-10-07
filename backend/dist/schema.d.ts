@@ -20,16 +20,16 @@ export declare const userSchema: z.ZodObject<{
 }>;
 export declare const createUserInputSchema: z.ZodObject<{
     email: z.ZodString;
-    password_hash: z.ZodString;
+    password: z.ZodString;
     name: z.ZodString;
 }, "strip", z.ZodTypeAny, {
     email?: string;
-    password_hash?: string;
     name?: string;
+    password?: string;
 }, {
     email?: string;
-    password_hash?: string;
     name?: string;
+    password?: string;
 }>;
 export declare const updateUserInputSchema: z.ZodObject<{
     user_id: z.ZodString;
