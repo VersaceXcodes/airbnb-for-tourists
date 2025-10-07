@@ -75,11 +75,11 @@ export const useAppStore = create<AppState>()(
 
       // Authentication Actions
       login_user: async (email, password) => {
-        set((state) => ({
+        set(() => ({
           authentication_state: {
-            ...state.authentication_state,
+            ...get().authentication_state,
             authentication_status: {
-              ...state.authentication_state.authentication_status,
+              ...get().authentication_state.authentication_status,
               is_loading: true,
             },
             error_message: null,
@@ -95,7 +95,7 @@ export const useAppStore = create<AppState>()(
 
           const { user, token } = response.data;
 
-          set((state) => ({
+          set(() => ({
             authentication_state: {
               current_user: user,
               auth_token: token,
@@ -109,7 +109,7 @@ export const useAppStore = create<AppState>()(
         } catch (error: any) {
           const errorMessage = error.response?.data?.message || error.message || 'Login failed';
 
-          set((state) => ({
+          set(() => ({
             authentication_state: {
               current_user: null,
               auth_token: null,
@@ -126,11 +126,11 @@ export const useAppStore = create<AppState>()(
 
       register_user: async (email, password, name) => {
         try {
-          set((state) => ({
+          set(() => ({
             authentication_state: {
-              ...state.authentication_state,
+              ...get().authentication_state,
               authentication_status: {
-                ...state.authentication_state.authentication_status,
+                ...get().authentication_state.authentication_status,
                 is_loading: true,
               },
               error_message: null,
@@ -138,14 +138,14 @@ export const useAppStore = create<AppState>()(
           }));
 
           const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`,
+            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register',
             { email, password, name },
             { headers: { 'Content-Type': 'application/json' } }
           );
 
           const { user, token } = response.data;
 
-          set((state) => ({
+          set(() => ({
             authentication_state: {
               current_user: user,
               auth_token: token,
@@ -159,7 +159,7 @@ export const useAppStore = create<AppState>()(
         } catch (error: any) {
           const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
 
-          set((state) => ({
+          set(() => ({
             authentication_state: {
               current_user: null,
               auth_token: null,
@@ -179,11 +179,11 @@ export const useAppStore = create<AppState>()(
         const token = authentication_state.auth_token;
 
         if (!token) {
-          set((state) => ({
+          set(() => ({
             authentication_state: {
-              ...state.authentication_state,
+              ...get().authentication_state,
               authentication_status: {
-                ...state.authentication_state.authentication_status,
+                ...get().authentication_state.authentication_status,
                 is_loading: false,
               },
               error_message: null,
@@ -200,7 +200,7 @@ export const useAppStore = create<AppState>()(
 
           const { user } = response.data;
 
-          set((state) => ({
+          set(() => ({
             authentication_state: {
               current_user: user,
               auth_token: token,
@@ -212,7 +212,7 @@ export const useAppStore = create<AppState>()(
             },
           }));
         } catch (error) {
-          set((state) => ({
+          set(() => ({
             authentication_state: {
               current_user: null,
               auth_token: null,
@@ -241,19 +241,18 @@ export const useAppStore = create<AppState>()(
       },
 
       clear_auth_error: () => {
-        set((state) => ({
+        set(() => ({
           authentication_state: {
-            ...state.authentication_state,
+            ...get().authentication_state,
             error_message: null,
           },
         }));
       },
 
-      // State actions for search criteria
       set_search_criteria: (criteria) => {
-        set((state) => ({
+        set(() => ({
           search_criteria: {
-            ...state.search_criteria,
+            ...get().search_criteria,
             ...criteria,
           },
         }));
