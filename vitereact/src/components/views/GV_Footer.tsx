@@ -1,18 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppStore } from '@/store/main';
 
 const GV_Footer: React.FC = () => {
-  const language = useAppStore(state => state.language);
-  const currency = useAppStore(state => state.currency);
+  const [language, setLanguage] = useState('en');
+  const [currency, setCurrency] = useState('USD');
 
   const changeLanguage = (newLanguage: string) => {
-    // Placeholder action - Would update client-side state
+    setLanguage(newLanguage);
     console.log('Changing language to:', newLanguage);
   };
 
   const changeCurrency = (newCurrency: string) => {
-    // Placeholder action - Would update client-side state
+    setCurrency(newCurrency);
     console.log('Changing currency to:', newCurrency);
   };
 

@@ -589,6 +589,57 @@ app.patch('/api/properties/:property_id', authenticateToken, async (req: Authent
 });
 
 /*
+  Get User Bookings Endpoint
+  Retrieves bookings for a specific user with property details
+*/
+app.get('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { user_id } = req.query;
+    
+    // Use authenticated user's ID if not provided or if user tries to access other's bookings
+    const targetUserId = user_id || req.user.user_id;
+    if (targetUserId !== req.user.user_id) {
+      return res.status(403).json(createErrorResponse('Unauthorized to access other user\'s bookings', null, 'UNAUTHORIZED_ACCESS'));
+    }
+
+    const result = await db.query(`
+      SELECT 
+        b.*,
+        p.name as property_name,
+        p.location as property_location,
+        p.images as property_images
+      FROM bookings b
+      JOIN properties p ON b.property_id = p.property_id
+      WHERE b.user_id = $1
+      ORDER BY b.start_date DESC
+    `, [targetUserId]);
+
+    const bookings = result.rows.map(row => ({
+      booking_id: row.booking_id,
+      property_id: row.property_id,
+      user_id: row.user_id,
+      start_date: row.start_date,
+      end_date: row.end_date,
+      guests: row.guests,
+      total_price: row.total_price,
+      is_paid: row.is_paid,
+      payment_error_message: row.payment_error_message,
+      property: {
+        name: row.property_name,
+        location: row.property_location,
+        images: row.property_images
+      }
+    }));
+
+    res.json(bookings);
+
+  } catch (error) {
+    console.error('Get user bookings error:', error);
+    res.status(500).json(createErrorResponse('Internal server error', error, 'INTERNAL_SERVER_ERROR'));
+  }
+});
+
+/*
   Create Booking Endpoint
   Creates a new booking for a property
 */

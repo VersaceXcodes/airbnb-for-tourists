@@ -2,22 +2,21 @@ import React from 'react';
 import { useAppStore } from '@/store/main';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { propertySchema, Property } from '@/schema';
+import { propertySchema, Property } from '@/schemas';
 import { Link } from 'react-router-dom';
+import { z } from 'zod';
 
-// Fetch properties function
-const fetchProperties = async (searchCriteria: any) => {
+const fetchProperties = async (searchCriteria: any): Promise<Property[]> => {
   const response = await axios.get(
     `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/properties`,
     { params: searchCriteria }
   );
-  const validatedData = propertySchema.array().parse(response.data);
+  const validatedData = z.array(propertySchema).parse(response.data);
   return validatedData;
 };
 
 const UV_SearchResults: React.FC = () => {
   const searchCriteria = useAppStore(state => state.search_criteria);
-  const setSearchCriteria = useAppStore(state => state.set_search_criteria);
 
   const { data: properties, isLoading, error } = useQuery<Property[]>({
     queryKey: ['properties', searchCriteria],
@@ -45,7 +44,7 @@ const UV_SearchResults: React.FC = () => {
             {properties && properties.map(property => (
               <div key={property.property_id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <img
-                  src={property.images?.[0] ?? ""}
+                  src={(property.images as any)?.urls?.[0] ?? "https://via.placeholder.com/400x300?text=No+Image"}
                   alt={property.name}
                   className="w-full h-32 sm:h-48 object-cover"
                 />

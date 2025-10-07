@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
 
 const UV_BookingFlow: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [dates, setDates] = useState({ start_date: '', end_date: '' });
   const [guests, setGuests] = useState(1);
   const [totalPrice, setTotalPrice] = useState(0);
 
-  const selectedProperty = useAppStore(state => state.booking_state.selected_property);
+  const propertyId = searchParams.get('property_id');
   const { current_user, auth_token } = useAppStore(state => state.authentication_state);
-  const { booking_details, payment_status } = useAppStore(state => state.booking_state);
 
-  const { mutate: initiateBooking, isLoading, error } = useMutation({
+  const { mutate: initiateBooking, isPending, error } = useMutation({
     mutationFn: async () => {
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/bookings`,
         {
-          property_id: selectedProperty?.property_id,
+          property_id: propertyId,
           user_id: current_user?.id,
           start_date: dates.start_date,
           end_date: dates.end_date,
           guests,
           total_price: totalPrice,
-          is_paid: payment_status.is_paid
+          is_paid: false
         },
         {
           headers: { Authorization: `Bearer ${auth_token}` }
@@ -48,9 +48,9 @@ const UV_BookingFlow: React.FC = () => {
   return (
     <>
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        {selectedProperty && (
+        {propertyId ? (
           <>
-            <h1 className="text-3xl font-bold mb-6">Booking for {selectedProperty.name}</h1>
+            <h1 className="text-3xl font-bold mb-6">Booking for Property {propertyId}</h1>
             <div className="bg-white shadow-md rounded-lg p-6 space-y-4 w-full max-w-md">
               <div className="space-y-4">
                 <div>
@@ -97,9 +97,9 @@ const UV_BookingFlow: React.FC = () => {
               <button 
                 onClick={handleBooking} 
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-                disabled={isLoading}
+                disabled={isPending}
               >
-                {isLoading ? 'Booking...' : 'Book Now'}
+                {isPending ? 'Booking...' : 'Book Now'}
               </button>
 
               <Link to="/user/profile" className="text-blue-600 hover:text-blue-700 text-sm">
@@ -107,6 +107,13 @@ const UV_BookingFlow: React.FC = () => {
               </Link>
             </div>
           </>
+        ) : (
+          <div className="text-center">
+            <p>No property selected</p>
+            <Link to="/search" className="text-blue-600 hover:text-blue-700">
+              Go to Search
+            </Link>
+          </div>
         )}
       </div>
     </>

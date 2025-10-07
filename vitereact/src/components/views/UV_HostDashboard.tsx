@@ -31,17 +31,23 @@ const UV_HostDashboard: React.FC = () => {
   const host_id = useAppStore(state => state.authentication_state.current_user?.id);
 
   // Fetch data using React Query
-  const { data: earningsOverview, isLoading: earningsLoading, isError: earningsError } = useQuery<EarningsOverview[], Error>(
-    ['earningsOverview', host_id],
-    () => fetchEarningsOverview(host_id as string),
-    { enabled: Boolean(host_id), staleTime: 60000, refetchOnWindowFocus: false, retry: 1 }
-  );
+  const { data: earningsOverview, isLoading: earningsLoading, isError: earningsError } = useQuery({
+    queryKey: ['earningsOverview', host_id],
+    queryFn: () => fetchEarningsOverview(host_id as string),
+    enabled: Boolean(host_id), 
+    staleTime: 60000, 
+    refetchOnWindowFocus: false, 
+    retry: 1
+  });
 
-  const { data: calendarData, isLoading: calendarLoading, isError: calendarError } = useQuery<CalendarData[], Error>(
-    ['calendarData', host_id],
-    () => fetchCalendarData(host_id as string),
-    { enabled: Boolean(host_id), staleTime: 60000, refetchOnWindowFocus: false, retry: 1 }
-  );
+  const { data: calendarData, isLoading: calendarLoading, isError: calendarError } = useQuery({
+    queryKey: ['calendarData', host_id],
+    queryFn: () => fetchCalendarData(host_id as string),
+    enabled: Boolean(host_id), 
+    staleTime: 60000, 
+    refetchOnWindowFocus: false, 
+    retry: 1
+  });
 
   return (
     <>

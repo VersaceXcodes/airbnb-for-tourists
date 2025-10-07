@@ -33,9 +33,22 @@ interface SearchCriteriaState {
   amenities: string[];
 }
 
+interface BookingState {
+  selected_property: {
+    property_id: string;
+    name: string;
+    price: number;
+  } | null;
+  booking_details: any;
+  payment_status: {
+    is_paid: boolean;
+  };
+}
+
 interface AppState {
   authentication_state: AuthenticationState;
   search_criteria: SearchCriteriaState;
+  booking_state: BookingState;
 
   // Authentication Actions
   login_user: (email: string, password: string) => Promise<void>;
@@ -71,6 +84,15 @@ export const useAppStore = create<AppState>()(
         dates: { start_date: '', end_date: '' },
         accommodation_type: '',
         amenities: [],
+      },
+
+      // Initial booking state
+      booking_state: {
+        selected_property: null,
+        booking_details: null,
+        payment_status: {
+          is_paid: false,
+        },
       },
 
       // Authentication Actions
@@ -138,8 +160,8 @@ export const useAppStore = create<AppState>()(
           }));
 
           const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register',
-            { email, password, name },
+            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`,
+            { email, password_hash: password, name },
             { headers: { 'Content-Type': 'application/json' } }
           );
 
@@ -211,7 +233,7 @@ export const useAppStore = create<AppState>()(
               error_message: null,
             },
           }));
-        } catch (error) {
+        } catch {
           set(() => ({
             authentication_state: {
               current_user: null,

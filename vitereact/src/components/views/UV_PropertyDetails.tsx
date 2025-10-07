@@ -2,8 +2,7 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Property, propertySchema } from '@/zodschemas';
-import { z } from 'zod';
+import { Property, propertySchema } from '@/schemas';
 
 const UV_PropertyDetails: React.FC = () => {
   const { property_id } = useParams<{ property_id: string }>();
@@ -12,20 +11,18 @@ const UV_PropertyDetails: React.FC = () => {
     data: propertyDetails,
     error,
     isLoading,
-  } = useQuery<Property>(
-    ['propertyDetails', property_id],
-    async () => {
+  } = useQuery<Property>({
+    queryKey: ['propertyDetails', property_id],
+    queryFn: async () => {
       const response = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/properties/${property_id}`
       );
       return propertySchema.parse(response.data);
     },
-    {
-      enabled: !!property_id, // Ensure property_id is defined before trying to fetch data
-      staleTime: 60000,
-      refetchOnWindowFocus: false,
-    }
-  );
+    enabled: !!property_id,
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+  });
 
   return (
     <>
@@ -36,22 +33,24 @@ const UV_PropertyDetails: React.FC = () => {
           </div>
         ) : error ? (
           <div className="text-red-600 text-center">
-            <p>Error loading property details: {error.message}</p>
+            <p>Error loading property details: {(error as Error).message}</p>
           </div>
-        ) : (
+        ) : propertyDetails ? (
           <>
             <h1 className="text-3xl font-bold text-gray-900">{propertyDetails.name}</h1>
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Image Gallery */}
               <div className="overflow-hidden rounded-lg">
-                {propertyDetails.images ? (
+                {propertyDetails.images && (propertyDetails.images as any).urls?.[0] ? (
                   <img
-                    src={propertyDetails.images.main}
+                    src={(propertyDetails.images as any).urls[0]}
                     alt={`Image of ${propertyDetails.name}`}
                     className="w-full object-cover"
                   />
                 ) : (
-                  <div className="text-gray-500 text-center">No image available</div>
+                  <div className="bg-gray-200 h-64 flex items-center justify-center text-gray-500">
+                    No image available
+                  </div>
                 )}
               </div>
 
@@ -70,7 +69,7 @@ const UV_PropertyDetails: React.FC = () => {
                 </div>
                 <div className="mt-6">
                   <h3 className="text-xl font-semibold text-gray-900">Price</h3>
-                  <p className="text-lg text-gray-700">${propertyDetails.price.toFixed(2)} per night</p>
+                  <p className="text-lg text-gray-700">${typeof propertyDetails.price === 'string' ? parseFloat(propertyDetails.price).toFixed(2) : propertyDetails.price.toFixed(2)} per night</p>
                 </div>
                 <Link
                   to={`/booking?property_id=${propertyDetails.property_id}`}
@@ -81,7 +80,7 @@ const UV_PropertyDetails: React.FC = () => {
               </div>
             </div>
           </>
-        )}
+        ) : null}
       </div>
     </>
   );

@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { Message } from '@/db/zodschemas'; // Adjust import path as necessary
+import { Message } from '@/schemas';
 
 const fetchMessages = async (userId: string) => {
   const response = await axios.get<Message[]>(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/users/${userId}/messages`);
@@ -22,13 +21,16 @@ const UV_UserMessages: React.FC = () => {
   const [selectedThread, setSelectedThread] = useState<Message | null>(null);
   const [newMessageContent, setNewMessageContent] = useState('');
 
-  const { data: messageThreads, isLoading, error } = useQuery(['messages', currentUser?.id], () => fetchMessages(currentUser?.id || ''), {
+  const { data: messageThreads, isLoading, error } = useQuery({
+    queryKey: ['messages', currentUser?.id],
+    queryFn: () => fetchMessages(currentUser?.id || ''),
     enabled: !!currentUser,
   });
 
-  const mutation = useMutation(sendMessage, {
+  const mutation = useMutation({
+    mutationFn: sendMessage,
     onSuccess: () => {
-      queryClient.invalidateQueries(['messages', currentUser?.id]);
+      queryClient.invalidateQueries({ queryKey: ['messages', currentUser?.id] });
       setNewMessageContent('');
     }
   });
@@ -50,7 +52,7 @@ const UV_UserMessages: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Messages</h1>
           
           {isLoading && <p>Loading messages...</p>}
-          {error && <p className="text-red-500">{error.message}</p>}
+          {error && <p className="text-red-500">{(error as Error).message}</p>}
           
           <div className="flex flex-col md:flex-row">
             {/* Message Threads List */}
@@ -97,9 +99,9 @@ const UV_UserMessages: React.FC = () => {
                     <button
                       onClick={handleSendMessage}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                      disabled={mutation.isLoading}
+                      disabled={mutation.isPending}
                     >
-                      {mutation.isLoading ? 'Sending...' : 'Send Message'}
+                      {mutation.isPending ? 'Sending...' : 'Send Message'}
                     </button>
                   </div>
                 </>

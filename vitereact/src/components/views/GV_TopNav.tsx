@@ -22,7 +22,9 @@ const GV_TopNav: React.FC = () => {
     return response.data;
   };
 
-  useQuery(['notifications'], fetchNotifications, {
+  useQuery({
+    queryKey: ['notifications'],
+    queryFn: fetchNotifications,
     enabled: isAuthenticated,
     staleTime: 60000,
   });

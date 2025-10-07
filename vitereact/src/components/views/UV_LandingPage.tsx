@@ -2,10 +2,10 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { propertySchema } from '@/store/main';
+import { propertySchema, Property } from '@/schemas';
 import { z } from 'zod';
 
-const fetchFeaturedListings = async () => {
+const fetchFeaturedListings = async (): Promise<Property[]> => {
   const response = await axios.get(
     `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/properties?featured=true`
   );
@@ -13,10 +13,10 @@ const fetchFeaturedListings = async () => {
 };
 
 const UV_LandingPage: React.FC = () => {
-  const { data: featuredListings, isLoading, isError, error } = useQuery(
-    'featuredListings',
-    fetchFeaturedListings
-  );
+  const { data: featuredListings, isLoading, isError, error } = useQuery<Property[], Error>({
+    queryKey: ['featuredListings'],
+    queryFn: fetchFeaturedListings
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -55,13 +55,13 @@ const UV_LandingPage: React.FC = () => {
             Featured Listings
           </h2>
           {isLoading && <div>Loading...</div>}
-          {isError && <div>Error loading featured listings: {error.message}</div>}
+          {isError && <div>Error loading featured listings: {error?.message}</div>}
           {!isLoading && !isError && featuredListings && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredListings.map((property) => (
+              {featuredListings.map((property: Property) => (
                 <div key={property.property_id} className="bg-white shadow-lg rounded-xl overflow-hidden">
                   <img
-                    src={property.images?.main || 'default-property-image.jpg'}
+                    src={(property.images as any)?.main || 'default-property-image.jpg'}
                     alt={property.name}
                     className="w-full h-56 object-cover"
                   />

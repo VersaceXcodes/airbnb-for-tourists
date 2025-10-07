@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppStore } from '@/store/main';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
@@ -9,22 +8,19 @@ const UV_HelpCenter: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
-  // Define mutation for submitting a query to backend (missing endpoint placeholder)
-  const mutation = useMutation(
-    async (query: string) => {
+  const mutation = useMutation({
+    mutationFn: async (query: string) => {
       const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/support/submit`, { query });
       return response.data;
     },
-    {
-      onSuccess: () => {
-        setSuccessMessage('Your query was submitted successfully!');
-        setSearchQuery('');
-      },
-      onError: (error: any) => {
-        setErrorMessage(error.response?.data?.message || 'Failed to submit your query');
-      },
-    }
-  );
+    onSuccess: () => {
+      setSuccessMessage('Your query was submitted successfully!');
+      setSearchQuery('');
+    },
+    onError: (error: any) => {
+      setErrorMessage(error.response?.data?.message || 'Failed to submit your query');
+    },
+  });
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -74,9 +70,9 @@ const UV_HelpCenter: React.FC = () => {
               <button
                 type="submit"
                 className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:shadow-xl focus:outline-none transition-all duration-200"
-                disabled={mutation.isLoading}
+                disabled={mutation.isPending}
               >
-                {mutation.isLoading ? 'Submitting...' : 'Submit Your Query'}
+                {mutation.isPending ? 'Submitting...' : 'Submit Your Query'}
               </button>
             </form>
           </section>

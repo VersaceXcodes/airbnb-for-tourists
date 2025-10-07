@@ -34,7 +34,9 @@ const UV_UserProfile: React.FC = () => {
     return response.data;
   };
 
-  const { data, isLoading, error } = useQuery(['userProfile', current_user?.id], fetchUserProfile, {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['userProfile', current_user?.id],
+    queryFn: fetchUserProfile,
     enabled: !!current_user,
   });
 
@@ -63,7 +65,7 @@ const UV_UserProfile: React.FC = () => {
 
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Booking History</h2>
-          {data.bookings.length === 0 ? (
+          {(!data.bookings || data.bookings.length === 0) ? (
             <p className="text-gray-600">No bookings yet.</p>
           ) : (
             <ul className="space-y-4">
