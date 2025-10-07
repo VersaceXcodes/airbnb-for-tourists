@@ -1,1 +1,1 @@
-{"root":["../jest.config.ts","../schema.ts","../server.test.ts","../server.ts"],"version":"5.8.3"}
+{"root":["../server.ts","../schema.ts"],"version":"5.8.3"}
