@@ -156,16 +156,29 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+        origin: [
+            process.env.FRONTEND_URL || 'http://localhost:5173',
+            'https://123airbnb-for-tourists.launchpulse.ai',
+            'http://localhost:5173',
+            'http://localhost:3000'
+        ],
         credentials: true,
+        methods: ['GET', 'POST'],
+        allowedHeaders: ['Content-Type', 'Authorization']
     }
 });
 const port = parseInt(process.env.PORT || '3000', 10);
 // Middleware
 app.use(morgan('combined'));
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: [
+        process.env.FRONTEND_URL || 'http://localhost:5173',
+        'https://123airbnb-for-tourists.launchpulse.ai',
+        'http://localhost:5173',
+        'http://localhost:3000'
+    ],
     credentials: true,
+    optionsSuccessStatus: 200
 }));
 app.use(express.json({ limit: "5mb" }));
 // Serve static files from the 'public' directory
@@ -393,9 +406,16 @@ app.get('/api/properties', async (req, res) => {
             paramIndex++;
         }
         if (amenities && Array.isArray(amenities)) {
-            conditions.push(`amenities && $${paramIndex}`);
-            queryParams.push(amenities);
-            paramIndex++;
+            // For each amenity, check if it exists in the array
+            const amenityConditions = amenities.map((amenity, index) => {
+                const currentIndex = paramIndex + index;
+                queryParams.push(`%${amenity}%`);
+                return `array_to_string(amenities, ',') ILIKE $${currentIndex}`;
+            });
+            if (amenityConditions.length > 0) {
+                conditions.push(`(${amenityConditions.join(' OR ')})`);
+                paramIndex += amenities.length;
+            }
         }
         // Add WHERE clause if there are conditions
         if (conditions.length > 0) {
@@ -793,11 +813,51 @@ app.get('/api/hosts/:host_id/calendar', authenticateToken, async (req, res) => {
 });
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        database: 'connected',
+        server: 'running',
+        port: port
+    });
+});
+// API root endpoint
+app.get('/api', (req, res) => {
+    res.json({
+        message: 'Airbnb API Server',
+        status: 'running',
+        version: '1.0.0',
+        endpoints: [
+            '/api/health',
+            '/api/auth/login',
+            '/api/auth/register',
+            '/api/auth/verify',
+            '/api/properties',
+            '/api/bookings'
+        ]
+    });
+});
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Global error handler:', err);
+    if (!res.headersSent) {
+        res.status(500).json(createErrorResponse('Internal server error', err, 'INTERNAL_SERVER_ERROR'));
+    }
+});
+// 404 handler for API routes
+app.use('/api/*', (req, res) => {
+    res.status(404).json(createErrorResponse('API endpoint not found', null, 'ENDPOINT_NOT_FOUND'));
 });
 // Catch-all route for SPA routing (excluding API routes)
 app.get(/^(?!\/api).*/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const indexPath = path.join(__dirname, 'public', 'index.html');
+    try {
+        res.sendFile(indexPath);
+    }
+    catch (error) {
+        console.error('Error serving index.html:', error);
+        res.status(500).send('Server Error');
+    }
 });
 export { app, db };
 // Start the server after initializing database
