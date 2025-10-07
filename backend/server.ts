@@ -392,6 +392,27 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 /*
+  Auth Verify Endpoint  
+  Validates existing token and returns user info
+*/
+app.get('/api/auth/verify', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    res.json({
+      user: {
+        id: req.user.user_id,
+        user_id: req.user.user_id,
+        email: req.user.email,
+        name: req.user.name,
+        created_at: req.user.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Auth verify error:', error);
+    res.status(500).json(createErrorResponse('Internal server error', error, 'INTERNAL_SERVER_ERROR'));
+  }
+});
+
+/*
   Get User Profile Endpoint
   Retrieves user information by user_id
 */
@@ -574,7 +595,7 @@ app.patch('/api/properties/:property_id', authenticateToken, async (req: Authent
 app.post('/api/bookings', authenticateToken, async (req, res) => {
   try {
     const validatedData = createBookingInputSchema.parse(req.body);
-    const { property_id, user_id, start_date, end_date, guests, total_price, is_paid, payment_error_message } = validatedData;
+    const { property_id, user_id, start_date, end_date, guests, total_price, is_paid, payment_error_message = null } = validatedData;
 
     // Verify property exists
     const propertyCheck = await db.query('SELECT property_id FROM properties WHERE property_id = $1', [property_id]);
@@ -856,6 +877,63 @@ io.on('connection', (socket: AuthenticatedSocket) => {
   socket.on('disconnect', () => {
     console.log(`User ${socket.user.user_id} disconnected`);
   });
+});
+
+/*
+  Host Earnings Endpoint
+  Returns mock earnings data for host dashboard
+*/
+app.get('/api/hosts/:host_id/earnings', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { host_id } = req.params;
+    
+    // Verify user is requesting their own data
+    if (host_id !== req.user.user_id) {
+      return res.status(403).json(createErrorResponse('Unauthorized to access this data', null, 'UNAUTHORIZED_ACCESS'));
+    }
+    
+    // Mock earnings data
+    const mockEarnings = [
+      { month: 'January 2024', earnings: 1250.00 },
+      { month: 'February 2024', earnings: 980.50 },
+      { month: 'March 2024', earnings: 1180.75 },
+      { month: 'April 2024', earnings: 1450.00 }
+    ];
+    
+    res.json(mockEarnings);
+  } catch (error) {
+    console.error('Get host earnings error:', error);
+    res.status(500).json(createErrorResponse('Internal server error', error, 'INTERNAL_SERVER_ERROR'));
+  }
+});
+
+/*
+  Host Calendar Endpoint
+  Returns mock calendar data for host dashboard
+*/
+app.get('/api/hosts/:host_id/calendar', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { host_id } = req.params;
+    
+    // Verify user is requesting their own data
+    if (host_id !== req.user.user_id) {
+      return res.status(403).json(createErrorResponse('Unauthorized to access this data', null, 'UNAUTHORIZED_ACCESS'));
+    }
+    
+    // Mock calendar data
+    const mockCalendarData = [
+      { date: '2024-01-15', available: true },
+      { date: '2024-01-16', available: false },
+      { date: '2024-01-17', available: true },
+      { date: '2024-01-18', available: true },
+      { date: '2024-01-19', available: false }
+    ];
+    
+    res.json(mockCalendarData);
+  } catch (error) {
+    console.error('Get host calendar error:', error);
+    res.status(500).json(createErrorResponse('Internal server error', error, 'INTERNAL_SERVER_ERROR'));
+  }
 });
 
 // Health check endpoint
