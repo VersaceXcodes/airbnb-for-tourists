@@ -1,6 +1,6 @@
 import request from 'supertest';
-import { app, pool } from './server.ts'; // Import your Express app instance and database pool
-import { createUserInputSchema } from './schemas/zodschemas.ts';
+import { app, db } from './server.ts';
+import { createUserInputSchema } from './schema.ts';
 
 beforeAll(async () => {
   // Initialize stuff before the tests (e.g., setup test DB connection)
@@ -8,7 +8,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   // Cleanup operations after tests are done.
-  await pool.end();
+  await db.close();
 });
 
 describe('User Endpoints', () => {

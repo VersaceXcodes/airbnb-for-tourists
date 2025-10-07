@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from "cors";
 import * as dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { PGlite } from '@electric-sql/pglite';
-import jwt from 'jsonwebtoken';
-import { Server } from 'socket.io';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { Server, Socket } from 'socket.io';
 import { createServer } from 'http';
 import morgan from 'morgan';
 import { v4 as uuidv4 } from 'uuid';
@@ -33,7 +33,26 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Error response utility
+interface UserData {
+  user_id: string;
+  email: string;
+  name: string;
+  created_at?: string;
+}
+
+interface JwtPayloadWithUser extends JwtPayload {
+  user_id: string;
+  email: string;
+}
+
+interface AuthenticatedRequest extends Request {
+  user: UserData;
+}
+
+interface AuthenticatedSocket extends Socket {
+  user: UserData;
+}
+
 interface ErrorResponse {
   success: false;
   message: string;
@@ -74,7 +93,8 @@ const { JWT_SECRET = 'your-secret-key' } = process.env;
 const db = new PGlite('./db');
 
 // Initialize database with schema
-await db.exec(`
+const initDatabase = async () => {
+  await db.exec(`
 CREATE TABLE IF NOT EXISTS users (
     user_id VARCHAR PRIMARY KEY,
     email VARCHAR UNIQUE NOT NULL,
@@ -161,6 +181,7 @@ INSERT INTO bookings (booking_id, property_id, user_id, start_date, end_date, gu
 ('booking2', 'property2', 'user1', '2023-11-01', '2023-11-05', 3, 900.00, FALSE, 'Payment failed due to insufficient funds.')
 ON CONFLICT (booking_id) DO NOTHING;
 `);
+};
 
 const app = express();
 const server = createServer(app);
@@ -171,7 +192,7 @@ const io = new Server(server, {
   }
 });
 
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT || '3000', 10);
 
 // Middleware
 app.use(morgan('combined'));
@@ -188,7 +209,7 @@ app.use(express.static(path.join(__dirname, 'public')));
   Authentication middleware for protected routes
   Validates JWT token and adds user info to request object
 */
-const authenticateToken = async (req, res, next) => {
+const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -197,14 +218,14 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayloadWithUser;
     const result = await db.query('SELECT user_id, email, name, created_at FROM users WHERE user_id = $1', [decoded.user_id]);
     
     if (result.rows.length === 0) {
       return res.status(401).json(createErrorResponse('Invalid token', null, 'AUTH_TOKEN_INVALID'));
     }
 
-    req.user = result.rows[0];
+    req.user = result.rows[0] as UserData;
     next();
   } catch (error) {
     return res.status(403).json(createErrorResponse('Invalid or expired token', error, 'AUTH_TOKEN_INVALID'));
@@ -215,21 +236,21 @@ const authenticateToken = async (req, res, next) => {
   WebSocket authentication middleware
   Validates JWT token for socket connections
 */
-const authenticateSocket = async (socket, next) => {
+const authenticateSocket = async (socket: AuthenticatedSocket, next: (err?: Error) => void) => {
   try {
     const token = socket.handshake.auth.token;
     if (!token) {
       return next(new Error('Authentication error'));
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayloadWithUser;
     const result = await db.query('SELECT user_id, email, name FROM users WHERE user_id = $1', [decoded.user_id]);
     
     if (result.rows.length === 0) {
       return next(new Error('Authentication error'));
     }
 
-    socket.user = result.rows[0];
+    socket.user = result.rows[0] as UserData;
     next();
   } catch (error) {
     next(new Error('Authentication error'));
@@ -262,7 +283,7 @@ app.post('/api/auth/register', async (req, res) => {
       [user_id, email.toLowerCase().trim(), password, name.trim(), created_at]
     );
 
-    const user = result.rows[0];
+    const user = result.rows[0] as UserData;
 
     // Generate JWT token
     const token = jwt.sign(
@@ -279,9 +300,15 @@ app.post('/api/auth/register', async (req, res) => {
     );
 
     res.status(200).json({
-      token_id,
-      user_id: user.user_id,
+      user: {
+        id: user.user_id,
+        user_id: user.user_id,
+        email: user.email,
+        name: user.name,
+        created_at: user.created_at
+      },
       token,
+      token_id,
       is_valid: true,
       created_at
     });
@@ -322,7 +349,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json(createErrorResponse('Invalid email or password', null, 'INVALID_CREDENTIALS'));
     }
 
-    const user = result.rows[0];
+    const user = result.rows[0] as any;
 
     // Check password (direct comparison for development)
     if (password !== user.password_hash) {
@@ -345,9 +372,15 @@ app.post('/api/auth/login', async (req, res) => {
     );
 
     res.json({
-      token_id,
-      user_id: user.user_id,
+      user: {
+        id: user.user_id,
+        user_id: user.user_id,
+        email: user.email,
+        name: user.name,
+        created_at: user.created_at
+      },
       token,
+      token_id,
       is_valid: true,
       created_at
     });
@@ -484,7 +517,7 @@ app.get('/api/properties/:property_id', async (req, res) => {
   Update Property Endpoint
   Updates property details for hosts
 */
-app.patch('/api/properties/:property_id', authenticateToken, async (req, res) => {
+app.patch('/api/properties/:property_id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { property_id } = req.params;
     const validatedData = updatePropertyInputSchema.parse(req.body);
@@ -495,7 +528,7 @@ app.patch('/api/properties/:property_id', authenticateToken, async (req, res) =>
       return res.status(404).json(createErrorResponse('Property not found', null, 'PROPERTY_NOT_FOUND'));
     }
 
-    if (propertyCheck.rows[0].host_id !== req.user.user_id) {
+    if ((propertyCheck.rows[0] as any).host_id !== req.user.user_id) {
       return res.status(403).json(createErrorResponse('Unauthorized to update this property', null, 'UNAUTHORIZED_UPDATE'));
     }
 
@@ -583,7 +616,7 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
   Update Booking Endpoint
   Updates booking details and payment status
 */
-app.patch('/api/bookings/:booking_id', authenticateToken, async (req, res) => {
+app.patch('/api/bookings/:booking_id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { booking_id } = req.params;
     const validatedData = updateBookingInputSchema.parse(req.body);
@@ -594,7 +627,7 @@ app.patch('/api/bookings/:booking_id', authenticateToken, async (req, res) => {
       return res.status(404).json(createErrorResponse('Booking not found', null, 'BOOKING_NOT_FOUND'));
     }
 
-    if (bookingCheck.rows[0].user_id !== req.user.user_id) {
+    if ((bookingCheck.rows[0] as any).user_id !== req.user.user_id) {
       return res.status(403).json(createErrorResponse('Unauthorized to update this booking', null, 'UNAUTHORIZED_UPDATE'));
     }
 
@@ -688,7 +721,7 @@ app.post('/api/reviews', authenticateToken, async (req, res) => {
   Send Message Endpoint
   Enables communication between users (hosts and guests)
 */
-app.post('/api/messages', authenticateToken, async (req, res) => {
+app.post('/api/messages', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const validatedData = createMessageInputSchema.parse(req.body);
     const { sender_id, recipient_id, property_id, content } = validatedData;
@@ -730,7 +763,7 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
   Update Message Endpoint
   Allows users to edit their own messages
 */
-app.patch('/api/messages/:message_id', authenticateToken, async (req, res) => {
+app.patch('/api/messages/:message_id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { message_id } = req.params;
     const validatedData = updateMessageInputSchema.parse(req.body);
@@ -741,7 +774,7 @@ app.patch('/api/messages/:message_id', authenticateToken, async (req, res) => {
       return res.status(404).json(createErrorResponse('Message not found', null, 'MESSAGE_NOT_FOUND'));
     }
 
-    if (messageCheck.rows[0].sender_id !== req.user.user_id) {
+    if ((messageCheck.rows[0] as any).sender_id !== req.user.user_id) {
       return res.status(403).json(createErrorResponse('Unauthorized to update this message', null, 'UNAUTHORIZED_UPDATE'));
     }
 
@@ -773,7 +806,7 @@ app.patch('/api/messages/:message_id', authenticateToken, async (req, res) => {
 */
 io.use(authenticateSocket);
 
-io.on('connection', (socket) => {
+io.on('connection', (socket: AuthenticatedSocket) => {
   console.log(`User ${socket.user.user_id} connected`);
   
   // Join user to their personal room for targeted messaging
@@ -837,7 +870,18 @@ app.get(/^(?!\/api).*/, (req, res) => {
 
 export { app, db };
 
-// Start the server
-server.listen(port, '0.0.0.0', () => {
-  console.log(`Server running on port ${port} and listening on 0.0.0.0`);
-});
+
+// Start the server after initializing database
+(async () => {
+  try {
+    await initDatabase();
+    console.log("Database initialized successfully");
+    
+    server.listen(port, "0.0.0.0", () => {
+      console.log(`Server running on port ${port} and listening on 0.0.0.0`);
+    });
+  } catch (error) {
+    console.error("Failed to initialize database:", error);
+    process.exit(1);
+  }
+})();
