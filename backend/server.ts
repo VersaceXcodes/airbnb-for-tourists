@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { createServer } from 'http';
 import morgan from 'morgan';
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
 
 // Import Zod schemas
 import { 
@@ -90,7 +91,31 @@ function createErrorResponse(
 // Database setup using PGlite for development
 const { JWT_SECRET = 'your-secret-key' } = process.env;
 
-const db = new PGlite('./db');
+const dbPath = './db';
+let db: PGlite;
+
+const initializePGlite = async () => {
+  try {
+    db = new PGlite(dbPath);
+    await db.waitReady;
+    return db;
+  } catch (error) {
+    console.error('Failed to initialize PGlite, attempting cleanup:', error);
+    try {
+      if (fs.existsSync(dbPath)) {
+        fs.rmSync(dbPath, { recursive: true, force: true });
+        console.log('Removed corrupted database directory');
+      }
+      db = new PGlite(dbPath);
+      await db.waitReady;
+      console.log('Successfully initialized PGlite after cleanup');
+      return db;
+    } catch (retryError) {
+      console.error('Failed to initialize PGlite after cleanup:', retryError);
+      throw retryError;
+    }
+  }
+};
 
 // Initialize database with schema
 const initDatabase = async () => {
@@ -1003,6 +1028,9 @@ export { app, db };
 // Start the server after initializing database
 (async () => {
   try {
+    await initializePGlite();
+    console.log("PGlite database connection established");
+    
     await initDatabase();
     console.log("Database initialized successfully");
     
