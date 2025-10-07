@@ -1,0 +1,212 @@
+{
+  "generated_at": "2025-10-07T10:30:00Z",
+  "user_structure": {
+    "table_name": "users",
+    "role_field": null,
+    "id_field": "user_id",
+    "registration_endpoint": "/api/auth/register",
+    "login_endpoint": "/api/auth/login",
+    "verify_endpoint": "/api/auth/verify",
+    "notes": "No role field in database. All users are equal. Seed data contains 2 users with known passwords."
+  },
+  "total_users": 2,
+  "verified_users": 2,
+  "users": [
+    {
+      "user_id": "user1",
+      "email": "johndoe@example.com",
+      "password": "password123",
+      "name": "John Doe",
+      "verified": true,
+      "source": "seed_data",
+      "created_at": "2023-10-20T10:00:00Z",
+      "description": "Host user with properties (property1 - Cozy Cottage)"
+    },
+    {
+      "user_id": "user2",
+      "email": "janedoe@example.com",
+      "password": "admin123",
+      "name": "Jane Doe",
+      "verified": true,
+      "source": "seed_data",
+      "created_at": "2023-10-21T11:00:00Z",
+      "description": "Host user with properties (property2 - City Apartment)"
+    }
+  ],
+  "by_role": {
+    "host": [
+      {
+        "user_id": "user1",
+        "email": "johndoe@example.com",
+        "password": "password123",
+        "name": "John Doe",
+        "verified": true,
+        "properties": ["property1"]
+      },
+      {
+        "user_id": "user2",
+        "email": "janedoe@example.com",
+        "password": "admin123",
+        "name": "Jane Doe",
+        "verified": true,
+        "properties": ["property2"]
+      }
+    ],
+    "guest": [
+      {
+        "user_id": "user1",
+        "email": "johndoe@example.com",
+        "password": "password123",
+        "name": "John Doe",
+        "verified": true,
+        "bookings": ["booking2"]
+      },
+      {
+        "user_id": "user2",
+        "email": "janedoe@example.com",
+        "password": "admin123",
+        "name": "Jane Doe",
+        "verified": true,
+        "bookings": ["booking1"]
+      }
+    ]
+  },
+  "authentication_flow": {
+    "login": {
+      "endpoint": "/api/auth/login",
+      "method": "POST",
+      "payload": {
+        "email": "string",
+        "password": "string"
+      },
+      "response": {
+        "user": {
+          "id": "string",
+          "user_id": "string",
+          "email": "string",
+          "name": "string",
+          "created_at": "string"
+        },
+        "token": "string (JWT)",
+        "token_id": "string",
+        "is_valid": "boolean",
+        "created_at": "string"
+      }
+    },
+    "register": {
+      "endpoint": "/api/auth/register",
+      "method": "POST",
+      "payload": {
+        "email": "string",
+        "password_hash": "string",
+        "name": "string"
+      },
+      "response": {
+        "user": {
+          "id": "string",
+          "user_id": "string",
+          "email": "string",
+          "name": "string",
+          "created_at": "string"
+        },
+        "token": "string (JWT)",
+        "token_id": "string",
+        "is_valid": "boolean",
+        "created_at": "string"
+      }
+    },
+    "verify": {
+      "endpoint": "/api/auth/verify",
+      "method": "GET",
+      "headers": {
+        "Authorization": "Bearer <token>"
+      },
+      "response": {
+        "user": {
+          "id": "string",
+          "user_id": "string",
+          "email": "string",
+          "name": "string",
+          "created_at": "string"
+        }
+      }
+    }
+  },
+  "test_scenarios": {
+    "login": {
+      "description": "Test user login with valid credentials",
+      "endpoint": "/api/auth/login",
+      "test_user": "johndoe@example.com",
+      "password": "password123"
+    },
+    "register": {
+      "description": "Test new user registration",
+      "endpoint": "/api/auth/register",
+      "sample_data": {
+        "email": "newuser@test.com",
+        "password_hash": "TestPass123!",
+        "name": "New Test User"
+      }
+    },
+    "protected_routes": {
+      "description": "Test protected routes with authentication",
+      "test_user": "janedoe@example.com",
+      "password": "admin123",
+      "endpoints": [
+        "/api/bookings",
+        "/api/user/profile",
+        "/api/hosts/:host_id/earnings",
+        "/api/hosts/:host_id/calendar"
+      ]
+    }
+  },
+  "seed_data": {
+    "properties": [
+      {
+        "property_id": "property1",
+        "name": "Cozy Cottage",
+        "location": "Countryside",
+        "host_id": "user1",
+        "price": 120.00,
+        "accommodation_type": "Cottage",
+        "amenities": ["Fireplace", "WiFi", "Parking"]
+      },
+      {
+        "property_id": "property2",
+        "name": "City Apartment",
+        "location": "Downtown",
+        "host_id": "user2",
+        "price": 150.00,
+        "accommodation_type": "Apartment",
+        "amenities": ["Elevator", "Gym", "WiFi"]
+      }
+    ],
+    "bookings": [
+      {
+        "booking_id": "booking1",
+        "property_id": "property1",
+        "user_id": "user2",
+        "start_date": "2023-10-23",
+        "end_date": "2023-10-28",
+        "guests": 2,
+        "total_price": 600.00,
+        "is_paid": true
+      },
+      {
+        "booking_id": "booking2",
+        "property_id": "property2",
+        "user_id": "user1",
+        "start_date": "2023-11-01",
+        "end_date": "2023-11-05",
+        "guests": 3,
+        "total_price": 900.00,
+        "is_paid": false
+      }
+    ]
+  },
+  "database_seed_info": {
+    "seed_users_exist": true,
+    "password_storage": "plaintext",
+    "note": "Passwords are stored in plaintext for development. Used seeded data from db.sql"
+  }
+}

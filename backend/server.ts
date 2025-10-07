@@ -614,7 +614,7 @@ app.get('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, re
       ORDER BY b.start_date DESC
     `, [targetUserId]);
 
-    const bookings = result.rows.map(row => ({
+    const bookings = result.rows.map((row: any) => ({
       booking_id: row.booking_id,
       property_id: row.property_id,
       user_id: row.user_id,

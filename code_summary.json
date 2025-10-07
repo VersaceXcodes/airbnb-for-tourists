@@ -1,0 +1,415 @@
+{
+  "project_name": "Airbnb-style Property Rental Platform",
+  "description": "A full-stack property rental application similar to Airbnb, featuring property listings, booking system, user authentication, real-time messaging, and host/guest management",
+  "tech_stack": {
+    "frontend": [
+      "React 18.3.1",
+      "TypeScript 5.5.3",
+      "Vite 5.4.0",
+      "React Router 6.26.0",
+      "Zustand (State Management)",
+      "TanStack Query (Data Fetching)",
+      "Axios (HTTP Client)",
+      "Tailwind CSS 3.4.8",
+      "Radix UI (Component Library)",
+      "Framer Motion (Animations)",
+      "Socket.io Client (Real-time)",
+      "React Hook Form + Zod (Form Validation)",
+      "Recharts (Data Visualization)",
+      "Vitest (Testing)"
+    ],
+    "backend": [
+      "Node.js",
+      "Express 4.19.2",
+      "TypeScript 5.8.2",
+      "PGlite (PostgreSQL)",
+      "JWT Authentication",
+      "Socket.io (WebSockets)",
+      "Zod (Schema Validation)",
+      "Morgan (Logging)",
+      "CORS",
+      "Jest (Testing)"
+    ],
+    "database": "PostgreSQL (via PGlite)",
+    "deployment": "Fly.io"
+  },
+  "features": [
+    {
+      "name": "User Authentication",
+      "description": "Complete user registration, login, and JWT-based authentication with token management",
+      "files": [
+        "vitereact/src/components/views/UV_LoginSignup.tsx",
+        "vitereact/src/store/main.tsx",
+        "backend/server.ts:266-413"
+      ],
+      "endpoints": [
+        "POST /api/auth/register",
+        "POST /api/auth/login",
+        "GET /api/auth/verify"
+      ],
+      "status": "functional"
+    },
+    {
+      "name": "Property Search & Browse",
+      "description": "Search and filter properties by location, price range, accommodation type, amenities with pagination",
+      "files": [
+        "vitereact/src/components/views/UV_LandingPage.tsx",
+        "vitereact/src/components/views/UV_SearchResults.tsx",
+        "backend/server.ts:440-514"
+      ],
+      "endpoints": [
+        "GET /api/properties",
+        "GET /api/properties/:property_id"
+      ],
+      "status": "functional"
+    },
+    {
+      "name": "Property Details View",
+      "description": "View detailed property information including images, amenities, reviews, and host information",
+      "files": [
+        "vitereact/src/components/views/UV_PropertyDetails.tsx",
+        "backend/server.ts:520-535"
+      ],
+      "endpoints": [
+        "GET /api/properties/:property_id"
+      ],
+      "status": "functional"
+    },
+    {
+      "name": "Booking System",
+      "description": "Create, view, and manage property bookings with date validation, conflict checking, and payment tracking",
+      "files": [
+        "vitereact/src/components/views/UV_BookingFlow.tsx",
+        "vitereact/src/components/views/UV_BookingHistory.tsx",
+        "backend/server.ts:595-739"
+      ],
+      "endpoints": [
+        "GET /api/bookings",
+        "POST /api/bookings",
+        "PATCH /api/bookings/:booking_id"
+      ],
+      "status": "functional"
+    },
+    {
+      "name": "Review System",
+      "description": "Users can review properties they've stayed at with ratings and comments",
+      "files": [
+        "backend/server.ts:745-790"
+      ],
+      "endpoints": [
+        "POST /api/reviews"
+      ],
+      "status": "functional"
+    },
+    {
+      "name": "Real-time Messaging",
+      "description": "WebSocket-based messaging between hosts and guests for property inquiries",
+      "files": [
+        "vitereact/src/components/views/UV_UserMessages.tsx",
+        "backend/server.ts:796-932"
+      ],
+      "endpoints": [
+        "POST /api/messages",
+        "PATCH /api/messages/:message_id"
+      ],
+      "websocket_events": [
+        "send_message",
+        "message/send",
+        "message_sent"
+      ],
+      "status": "functional"
+    },
+    {
+      "name": "User Profile Management",
+      "description": "View and manage user profile information and booking history",
+      "files": [
+        "vitereact/src/components/views/UV_UserProfile.tsx",
+        "backend/server.ts:419-434"
+      ],
+      "endpoints": [
+        "GET /api/users/:user_id"
+      ],
+      "status": "functional"
+    },
+    {
+      "name": "Host Dashboard",
+      "description": "Property management for hosts including earnings tracking and calendar availability",
+      "files": [
+        "vitereact/src/components/views/UV_HostDashboard.tsx",
+        "backend/server.ts:937-988"
+      ],
+      "endpoints": [
+        "PATCH /api/properties/:property_id",
+        "GET /api/hosts/:host_id/earnings",
+        "GET /api/hosts/:host_id/calendar"
+      ],
+      "status": "functional"
+    },
+    {
+      "name": "Help Center",
+      "description": "FAQ and support information for users",
+      "files": [
+        "vitereact/src/components/views/UV_HelpCenter.tsx"
+      ],
+      "status": "functional"
+    }
+  ],
+  "database_tables": [
+    {
+      "name": "users",
+      "description": "User accounts with authentication credentials",
+      "columns": ["user_id", "email", "password_hash", "name", "created_at"]
+    },
+    {
+      "name": "properties",
+      "description": "Property listings with details, images, and pricing",
+      "columns": ["property_id", "name", "location", "host_id", "description", "accommodation_type", "amenities", "price", "images"]
+    },
+    {
+      "name": "bookings",
+      "description": "Property bookings with dates, guests, and payment status",
+      "columns": ["booking_id", "property_id", "user_id", "start_date", "end_date", "guests", "total_price", "is_paid", "payment_error_message"]
+    },
+    {
+      "name": "reviews",
+      "description": "Property reviews with ratings and comments",
+      "columns": ["review_id", "property_id", "user_id", "rating", "comment", "created_at"]
+    },
+    {
+      "name": "messages",
+      "description": "User-to-user messages for property inquiries",
+      "columns": ["message_id", "sender_id", "recipient_id", "property_id", "content", "timestamp"]
+    },
+    {
+      "name": "auth_tokens",
+      "description": "JWT token management and validation",
+      "columns": ["token_id", "user_id", "token", "is_valid", "created_at"]
+    },
+    {
+      "name": "searches",
+      "description": "Search history and criteria tracking",
+      "columns": ["search_id", "user_id", "location", "price_min", "price_max", "start_date", "end_date", "accommodation_type", "amenities"]
+    }
+  ],
+  "api_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "description": "Register new user account",
+      "authentication": "none"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "description": "Login with email and password",
+      "authentication": "none"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/verify",
+      "description": "Verify JWT token and get user info",
+      "authentication": "required"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/:user_id",
+      "description": "Get user profile information",
+      "authentication": "required"
+    },
+    {
+      "method": "GET",
+      "path": "/api/properties",
+      "description": "Search properties with filters",
+      "authentication": "optional"
+    },
+    {
+      "method": "GET",
+      "path": "/api/properties/:property_id",
+      "description": "Get property details",
+      "authentication": "optional"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/properties/:property_id",
+      "description": "Update property details (host only)",
+      "authentication": "required"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bookings",
+      "description": "Get user's bookings",
+      "authentication": "required"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bookings",
+      "description": "Create new booking",
+      "authentication": "required"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/bookings/:booking_id",
+      "description": "Update booking details",
+      "authentication": "required"
+    },
+    {
+      "method": "POST",
+      "path": "/api/reviews",
+      "description": "Submit property review",
+      "authentication": "required"
+    },
+    {
+      "method": "POST",
+      "path": "/api/messages",
+      "description": "Send message to another user",
+      "authentication": "required"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/messages/:message_id",
+      "description": "Update message content",
+      "authentication": "required"
+    },
+    {
+      "method": "GET",
+      "path": "/api/hosts/:host_id/earnings",
+      "description": "Get host earnings data",
+      "authentication": "required"
+    },
+    {
+      "method": "GET",
+      "path": "/api/hosts/:host_id/calendar",
+      "description": "Get host calendar availability",
+      "authentication": "required"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "description": "Health check endpoint",
+      "authentication": "none"
+    }
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "component": "UV_LandingPage",
+      "description": "Homepage with search functionality",
+      "protected": false
+    },
+    {
+      "path": "/auth/login-signup",
+      "component": "UV_LoginSignup",
+      "description": "Login and registration page",
+      "protected": false
+    },
+    {
+      "path": "/search",
+      "component": "UV_SearchResults",
+      "description": "Property search results page",
+      "protected": false
+    },
+    {
+      "path": "/property/:property_id",
+      "component": "UV_PropertyDetails",
+      "description": "Individual property details",
+      "protected": false
+    },
+    {
+      "path": "/booking",
+      "component": "UV_BookingFlow",
+      "description": "Booking creation flow",
+      "protected": true
+    },
+    {
+      "path": "/user/profile",
+      "component": "UV_UserProfile",
+      "description": "User profile and settings",
+      "protected": true
+    },
+    {
+      "path": "/host/dashboard",
+      "component": "UV_HostDashboard",
+      "description": "Host property management dashboard",
+      "protected": true
+    },
+    {
+      "path": "/help-center",
+      "component": "UV_HelpCenter",
+      "description": "Help and FAQ page",
+      "protected": false
+    }
+  ],
+  "key_components": [
+    {
+      "name": "GV_TopNav",
+      "file": "vitereact/src/components/views/GV_TopNav.tsx",
+      "description": "Top navigation bar with authentication state and user menu"
+    },
+    {
+      "name": "GV_Footer",
+      "file": "vitereact/src/components/views/GV_Footer.tsx",
+      "description": "Footer with links and information"
+    },
+    {
+      "name": "ProtectedRoute",
+      "file": "vitereact/src/App.tsx",
+      "description": "Route wrapper for authentication-required pages"
+    }
+  ],
+  "state_management": {
+    "store": "Zustand with persist middleware",
+    "file": "vitereact/src/store/main.tsx",
+    "stores": [
+      {
+        "name": "authentication_state",
+        "description": "User authentication, token, and auth status"
+      },
+      {
+        "name": "search_criteria",
+        "description": "Property search filters and parameters"
+      },
+      {
+        "name": "booking_state",
+        "description": "Current booking flow and payment status"
+      }
+    ]
+  },
+  "real_time_features": {
+    "technology": "Socket.io",
+    "events": [
+      "auth/token/generate - Token creation notifications",
+      "property/update - Property changes broadcast",
+      "booking/update - Booking status updates",
+      "review/add - New review notifications",
+      "message/send - Real-time messaging",
+      "send_message - Client-to-server message events"
+    ]
+  },
+  "validation": {
+    "library": "Zod",
+    "schemas_file": "backend/schema.ts",
+    "frontend_schemas": "vitereact/src/schemas.ts (re-exports backend schemas)"
+  },
+  "testing": {
+    "frontend": {
+      "framework": "Vitest",
+      "test_files": "vitereact/src/__tests__/"
+    },
+    "backend": {
+      "framework": "Jest + Supertest",
+      "test_files": "backend/server.test.ts"
+    }
+  },
+  "deployment": {
+    "platform": "Fly.io",
+    "frontend_url": "https://123airbnb-for-tourists.launchpulse.ai",
+    "backend_url": "https://123airbnb-for-tourists.launchpulse.ai",
+    "spa_routing": "Handled via Express catch-all route"
+  },
+  "development_notes": {
+    "database": "PGlite (embedded PostgreSQL) stores data in ./db directory",
+    "passwords": "Stored in plaintext for development (not hashed)",
+    "cors": "Configured for http://localhost:5173 in development",
+    "seed_data": "Database seeded with 2 users and 2 properties on initialization"
+  }
+}
