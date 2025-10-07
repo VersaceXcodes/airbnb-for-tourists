@@ -87,7 +87,7 @@ describe('E2E Auth Flow (register -> logout -> sign-in)', () => {
 
     cleanup();
 
-    const { container: signInContainer } = render(<UV_LoginSignup />, { wrapper: Wrapper });
+    render(<UV_LoginSignup />, { wrapper: Wrapper });
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /sign in to your account/i })).toBeInTheDocument();

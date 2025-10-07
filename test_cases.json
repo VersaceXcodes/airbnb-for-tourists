@@ -1,0 +1,622 @@
+{
+  "generated_at": "2025-10-07T10:30:00Z",
+  "application_name": "Airbnb for Tourists",
+  "base_url": "https://123airbnb-for-tourists.launchpulse.ai",
+  "total_test_cases": 35,
+  "test_categories": [
+    "functionality",
+    "authentication",
+    "navigation",
+    "interface",
+    "content",
+    "booking",
+    "search",
+    "user_profile",
+    "host_dashboard",
+    "messaging",
+    "reviews"
+  ],
+  "testCases": [
+    {
+      "id": "functional-app-test",
+      "name": "Functional Application Test",
+      "category": "functionality",
+      "priority": "critical",
+      "description": "Verify the application has actual functionality beyond basic placeholder",
+      "steps": [
+        "Navigate to application homepage",
+        "Verify multiple interactive elements exist (buttons, forms, links)",
+        "Check for proper navigation structure with header and footer",
+        "Verify application has real features, not just 'Vite + React' text",
+        "Confirm presence of search bar and property listings"
+      ],
+      "expectedOutcome": "Application shows functional features with property rental interface, search functionality, and navigation",
+      "failureCondition": "If page only shows 'Vite + React' placeholder, this test should FAIL"
+    },
+    {
+      "id": "ui-components-test",
+      "name": "UI Components Test",
+      "category": "interface",
+      "priority": "high",
+      "description": "Test that UI components are properly implemented",
+      "steps": [
+        "Check for search form with location and date inputs",
+        "Look for property listing cards with images and details",
+        "Verify navigation menu exists with authentication options",
+        "Test responsive design elements on different viewport sizes",
+        "Check for interactive buttons (Search, View Details, Book Now)"
+      ],
+      "expectedOutcome": "Multiple interactive UI components found and functional with proper styling"
+    },
+    {
+      "id": "content-quality-test",
+      "name": "Content Quality Test",
+      "category": "content",
+      "priority": "high",
+      "description": "Verify application has meaningful content",
+      "steps": [
+        "Check page has substantial content beyond placeholder",
+        "Verify proper heading structure (Welcome to Airbnb for Tourists)",
+        "Look for actual application features (property listings, search)",
+        "Ensure professional appearance with consistent styling",
+        "Verify seed data properties are displayed (Cozy Cottage, City Apartment)"
+      ],
+      "expectedOutcome": "Application demonstrates real functionality and professional design with actual property data"
+    },
+    {
+      "id": "auth-login-test",
+      "name": "User Login Test",
+      "category": "authentication",
+      "priority": "critical",
+      "description": "Test user login functionality with valid credentials",
+      "steps": [
+        "Navigate to /auth/login-signup",
+        "Enter email: johndoe@example.com",
+        "Enter password: password123",
+        "Click Login button",
+        "Verify successful login and redirect",
+        "Check for user name 'John Doe' in navigation",
+        "Verify JWT token is stored"
+      ],
+      "expectedOutcome": "User successfully logs in, sees authenticated UI, and can access protected routes",
+      "test_data": {
+        "email": "johndoe@example.com",
+        "password": "password123",
+        "expected_name": "John Doe"
+      }
+    },
+    {
+      "id": "auth-register-test",
+      "name": "User Registration Test",
+      "category": "authentication",
+      "priority": "critical",
+      "description": "Test new user registration functionality",
+      "steps": [
+        "Navigate to /auth/login-signup",
+        "Switch to Sign Up tab",
+        "Enter new email (e.g., testuser@example.com)",
+        "Enter password",
+        "Enter name",
+        "Click Register button",
+        "Verify successful registration",
+        "Check user is automatically logged in"
+      ],
+      "expectedOutcome": "New user account is created and user is automatically logged in"
+    },
+    {
+      "id": "auth-logout-test",
+      "name": "User Logout Test",
+      "category": "authentication",
+      "priority": "high",
+      "description": "Test user logout functionality",
+      "steps": [
+        "Login with valid credentials",
+        "Click on user menu in navigation",
+        "Click Logout button",
+        "Verify user is logged out",
+        "Check redirect to homepage",
+        "Verify protected routes are inaccessible"
+      ],
+      "expectedOutcome": "User successfully logs out and authentication state is cleared"
+    },
+    {
+      "id": "auth-protected-routes-test",
+      "name": "Protected Routes Test",
+      "category": "authentication",
+      "priority": "high",
+      "description": "Verify protected routes require authentication",
+      "steps": [
+        "Without logging in, try to access /booking",
+        "Verify redirect to /auth/login-signup",
+        "Try to access /user/profile",
+        "Verify redirect to login page",
+        "Try to access /host/dashboard",
+        "Verify redirect to login page"
+      ],
+      "expectedOutcome": "Unauthenticated users are redirected to login for protected routes"
+    },
+    {
+      "id": "nav-homepage-test",
+      "name": "Homepage Navigation Test",
+      "category": "navigation",
+      "priority": "high",
+      "description": "Test navigation to and from homepage",
+      "steps": [
+        "Navigate to base URL /",
+        "Verify homepage loads with welcome message",
+        "Check for 'Welcome to Airbnb for Tourists' heading",
+        "Verify search form is present",
+        "Check for featured listings section",
+        "Verify 'How it Works' section exists"
+      ],
+      "expectedOutcome": "Homepage displays correctly with all major sections"
+    },
+    {
+      "id": "nav-property-details-test",
+      "name": "Property Details Navigation",
+      "category": "navigation",
+      "priority": "high",
+      "description": "Test navigation to property details page",
+      "steps": [
+        "From homepage, find property card",
+        "Click 'View Details' button on a property",
+        "Verify redirect to /property/:property_id",
+        "Check property details page loads",
+        "Verify property name, description, price, and amenities are shown",
+        "Check for 'Book Now' button"
+      ],
+      "expectedOutcome": "Property details page displays complete property information"
+    },
+    {
+      "id": "search-basic-test",
+      "name": "Basic Property Search Test",
+      "category": "search",
+      "priority": "critical",
+      "description": "Test basic property search functionality",
+      "steps": [
+        "Navigate to homepage",
+        "Enter location in search bar (e.g., 'Countryside')",
+        "Select check-in and check-out dates",
+        "Click Search button",
+        "Verify redirect to /search page",
+        "Check search results are displayed",
+        "Verify properties matching criteria are shown"
+      ],
+      "expectedOutcome": "Search results page displays properties matching search criteria"
+    },
+    {
+      "id": "search-filters-test",
+      "name": "Search Filters Test",
+      "category": "search",
+      "priority": "high",
+      "description": "Test property search with filters",
+      "steps": [
+        "Navigate to /search page",
+        "Apply price range filter (e.g., $100-$150)",
+        "Filter by accommodation type (e.g., Cottage)",
+        "Select amenities (e.g., WiFi, Parking)",
+        "Verify filtered results update dynamically",
+        "Check only matching properties are displayed"
+      ],
+      "expectedOutcome": "Search results are filtered correctly based on selected criteria"
+    },
+    {
+      "id": "search-empty-results-test",
+      "name": "Empty Search Results Test",
+      "category": "search",
+      "priority": "medium",
+      "description": "Test search with no matching results",
+      "steps": [
+        "Navigate to /search page",
+        "Enter search criteria that won't match any properties",
+        "Verify appropriate message is shown",
+        "Check for 'No properties found' or similar message",
+        "Verify page doesn't crash or show errors"
+      ],
+      "expectedOutcome": "Graceful handling of empty search results with appropriate message"
+    },
+    {
+      "id": "property-view-details-test",
+      "name": "Property Details View Test",
+      "category": "interface",
+      "priority": "high",
+      "description": "Verify all property details are displayed correctly",
+      "steps": [
+        "Navigate to /property/property1",
+        "Verify property name 'Cozy Cottage' is displayed",
+        "Check property description is shown",
+        "Verify price per night is displayed ($120)",
+        "Check amenities list (Fireplace, WiFi, Parking)",
+        "Verify property images are shown",
+        "Check 'Book Now' button is present"
+      ],
+      "expectedOutcome": "Property details page shows complete information with proper formatting"
+    },
+    {
+      "id": "booking-flow-start-test",
+      "name": "Booking Flow Initialization Test",
+      "category": "booking",
+      "priority": "critical",
+      "description": "Test starting the booking process",
+      "steps": [
+        "Login with valid credentials",
+        "Navigate to property details page",
+        "Click 'Book Now' button",
+        "Verify redirect to /booking with property_id parameter",
+        "Check booking form is displayed",
+        "Verify property information is pre-filled"
+      ],
+      "expectedOutcome": "Booking flow starts correctly with selected property information",
+      "requires_auth": true
+    },
+    {
+      "id": "booking-create-test",
+      "name": "Create Booking Test",
+      "category": "booking",
+      "priority": "critical",
+      "description": "Test creating a new booking",
+      "steps": [
+        "Login as johndoe@example.com",
+        "Navigate to booking flow for a property",
+        "Select check-in date (future date)",
+        "Select check-out date (after check-in)",
+        "Enter number of guests",
+        "Review total price calculation",
+        "Submit booking",
+        "Verify booking confirmation",
+        "Check booking appears in booking history"
+      ],
+      "expectedOutcome": "New booking is created successfully and appears in user's bookings",
+      "requires_auth": true,
+      "test_data": {
+        "user": "johndoe@example.com",
+        "password": "password123"
+      }
+    },
+    {
+      "id": "booking-date-validation-test",
+      "name": "Booking Date Validation Test",
+      "category": "booking",
+      "priority": "high",
+      "description": "Test date validation in booking flow",
+      "steps": [
+        "Login and start booking flow",
+        "Try to select check-out date before check-in date",
+        "Verify error message is shown",
+        "Try to select past dates",
+        "Verify validation prevents invalid date selection",
+        "Select valid date range and verify it's accepted"
+      ],
+      "expectedOutcome": "Date validation prevents invalid booking dates",
+      "requires_auth": true
+    },
+    {
+      "id": "booking-conflict-test",
+      "name": "Booking Conflict Detection Test",
+      "category": "booking",
+      "priority": "high",
+      "description": "Test booking conflict detection for already booked dates",
+      "steps": [
+        "Login and navigate to booking flow",
+        "Try to book dates that overlap with existing booking",
+        "Verify conflict error message is shown",
+        "Check that booking is not created",
+        "Try different dates that don't conflict",
+        "Verify booking succeeds"
+      ],
+      "expectedOutcome": "System prevents double-booking and shows appropriate error message",
+      "requires_auth": true
+    },
+    {
+      "id": "booking-history-test",
+      "name": "Booking History Test",
+      "category": "booking",
+      "priority": "high",
+      "description": "Test viewing booking history",
+      "steps": [
+        "Login as user with existing bookings",
+        "Navigate to /user/profile",
+        "Look for booking history section",
+        "Verify past and upcoming bookings are shown",
+        "Check booking details (property, dates, price)",
+        "Verify payment status is displayed"
+      ],
+      "expectedOutcome": "User can view their complete booking history with details",
+      "requires_auth": true
+    },
+    {
+      "id": "user-profile-view-test",
+      "name": "User Profile View Test",
+      "category": "user_profile",
+      "priority": "high",
+      "description": "Test viewing user profile information",
+      "steps": [
+        "Login with valid credentials",
+        "Navigate to /user/profile",
+        "Verify user information is displayed (name, email)",
+        "Check for profile sections (bookings, reviews, messages)",
+        "Verify created_at date is shown",
+        "Check for edit profile options"
+      ],
+      "expectedOutcome": "User profile page displays complete user information",
+      "requires_auth": true
+    },
+    {
+      "id": "host-dashboard-access-test",
+      "name": "Host Dashboard Access Test",
+      "category": "host_dashboard",
+      "priority": "high",
+      "description": "Test accessing host dashboard",
+      "steps": [
+        "Login as user with properties (janedoe@example.com)",
+        "Navigate to /host/dashboard",
+        "Verify dashboard loads successfully",
+        "Check for properties list",
+        "Verify earnings section is visible",
+        "Check calendar availability section"
+      ],
+      "expectedOutcome": "Host can access dashboard and view property management features",
+      "requires_auth": true,
+      "test_data": {
+        "user": "janedoe@example.com",
+        "password": "admin123"
+      }
+    },
+    {
+      "id": "host-earnings-test",
+      "name": "Host Earnings Display Test",
+      "category": "host_dashboard",
+      "priority": "medium",
+      "description": "Test host earnings data display",
+      "steps": [
+        "Login as host (janedoe@example.com)",
+        "Navigate to host dashboard",
+        "Look for earnings section",
+        "Verify earnings data is displayed",
+        "Check for earnings breakdown by month",
+        "Verify total earnings calculation"
+      ],
+      "expectedOutcome": "Host earnings are displayed with proper breakdown",
+      "requires_auth": true
+    },
+    {
+      "id": "host-calendar-test",
+      "name": "Host Calendar Test",
+      "category": "host_dashboard",
+      "priority": "medium",
+      "description": "Test host property calendar functionality",
+      "steps": [
+        "Login as host",
+        "Navigate to host dashboard",
+        "Look for calendar section",
+        "Verify calendar displays available/booked dates",
+        "Check for visual indicators of booking status",
+        "Verify calendar is interactive"
+      ],
+      "expectedOutcome": "Host can view property availability calendar",
+      "requires_auth": true
+    },
+    {
+      "id": "property-update-test",
+      "name": "Property Update Test",
+      "category": "host_dashboard",
+      "priority": "high",
+      "description": "Test property details update by host",
+      "steps": [
+        "Login as property host",
+        "Navigate to host dashboard",
+        "Select a property to edit",
+        "Update property details (name, description, price)",
+        "Save changes",
+        "Verify update confirmation",
+        "Check updated details are reflected"
+      ],
+      "expectedOutcome": "Host can successfully update property information",
+      "requires_auth": true
+    },
+    {
+      "id": "messaging-send-test",
+      "name": "Send Message Test",
+      "category": "messaging",
+      "priority": "high",
+      "description": "Test sending messages between users",
+      "steps": [
+        "Login as user1",
+        "Navigate to property details",
+        "Find 'Contact Host' or messaging option",
+        "Compose message",
+        "Send message",
+        "Verify message sent confirmation",
+        "Check message appears in conversation"
+      ],
+      "expectedOutcome": "User can send messages to property hosts",
+      "requires_auth": true
+    },
+    {
+      "id": "messaging-realtime-test",
+      "name": "Real-time Messaging Test",
+      "category": "messaging",
+      "priority": "medium",
+      "description": "Test real-time message delivery via WebSocket",
+      "steps": [
+        "Login as user1 in one browser",
+        "Login as user2 in another browser",
+        "Send message from user1 to user2",
+        "Verify message appears in user2's interface in real-time",
+        "Check WebSocket connection is established",
+        "Verify no page refresh is needed"
+      ],
+      "expectedOutcome": "Messages are delivered in real-time via WebSocket",
+      "requires_auth": true
+    },
+    {
+      "id": "review-submit-test",
+      "name": "Submit Review Test",
+      "category": "reviews",
+      "priority": "high",
+      "description": "Test submitting a property review",
+      "steps": [
+        "Login as user with completed booking",
+        "Navigate to property they stayed at",
+        "Find review section",
+        "Enter rating (1-5 stars)",
+        "Enter review comment",
+        "Submit review",
+        "Verify review submission confirmation",
+        "Check review appears on property page"
+      ],
+      "expectedOutcome": "User can submit review for properties they've booked",
+      "requires_auth": true
+    },
+    {
+      "id": "review-validation-test",
+      "name": "Review Validation Test",
+      "category": "reviews",
+      "priority": "medium",
+      "description": "Test review submission validation",
+      "steps": [
+        "Login as user without completed booking",
+        "Try to submit review for property",
+        "Verify error message about needing completed stay",
+        "Check review is not created",
+        "Try to submit duplicate review",
+        "Verify duplicate prevention"
+      ],
+      "expectedOutcome": "Review validation prevents invalid submissions",
+      "requires_auth": true
+    },
+    {
+      "id": "help-center-test",
+      "name": "Help Center Access Test",
+      "category": "navigation",
+      "priority": "medium",
+      "description": "Test help center functionality",
+      "steps": [
+        "Navigate to /help-center",
+        "Verify help center page loads",
+        "Check for FAQ section",
+        "Verify support contact information",
+        "Check for common help topics",
+        "Verify search functionality in help center"
+      ],
+      "expectedOutcome": "Help center provides support information and FAQs"
+    },
+    {
+      "id": "responsive-mobile-test",
+      "name": "Mobile Responsiveness Test",
+      "category": "interface",
+      "priority": "high",
+      "description": "Test application responsiveness on mobile devices",
+      "steps": [
+        "Open application on mobile viewport (375px width)",
+        "Check navigation menu adapts to mobile",
+        "Verify property cards stack properly",
+        "Check search form is usable on mobile",
+        "Verify buttons are touch-friendly",
+        "Check images scale properly"
+      ],
+      "expectedOutcome": "Application is fully functional and properly styled on mobile devices"
+    },
+    {
+      "id": "responsive-tablet-test",
+      "name": "Tablet Responsiveness Test",
+      "category": "interface",
+      "priority": "medium",
+      "description": "Test application responsiveness on tablet devices",
+      "steps": [
+        "Open application on tablet viewport (768px width)",
+        "Verify layout adapts to tablet size",
+        "Check property grid shows 2 columns",
+        "Verify navigation is properly sized",
+        "Check forms are usable",
+        "Verify images display correctly"
+      ],
+      "expectedOutcome": "Application layout adapts properly to tablet viewports"
+    },
+    {
+      "id": "error-handling-404-test",
+      "name": "404 Error Handling Test",
+      "category": "functionality",
+      "priority": "medium",
+      "description": "Test handling of non-existent routes",
+      "steps": [
+        "Navigate to non-existent route (e.g., /nonexistent)",
+        "Verify redirect to homepage or 404 page",
+        "Check no JavaScript errors occur",
+        "Verify proper error message is shown",
+        "Check navigation still works"
+      ],
+      "expectedOutcome": "Application handles non-existent routes gracefully"
+    },
+    {
+      "id": "error-handling-api-test",
+      "name": "API Error Handling Test",
+      "category": "functionality",
+      "priority": "medium",
+      "description": "Test handling of API errors",
+      "steps": [
+        "Trigger API error (e.g., invalid property ID)",
+        "Verify error message is shown to user",
+        "Check application doesn't crash",
+        "Verify user can recover from error",
+        "Check error is logged appropriately"
+      ],
+      "expectedOutcome": "API errors are handled gracefully with user-friendly messages"
+    },
+    {
+      "id": "performance-page-load-test",
+      "name": "Page Load Performance Test",
+      "category": "functionality",
+      "priority": "medium",
+      "description": "Test page load performance",
+      "steps": [
+        "Navigate to homepage",
+        "Measure page load time",
+        "Verify page loads in under 3 seconds",
+        "Check for lazy loading of images",
+        "Verify no unnecessary re-renders",
+        "Check bundle size is optimized"
+      ],
+      "expectedOutcome": "Application loads quickly with optimized assets"
+    },
+    {
+      "id": "accessibility-keyboard-test",
+      "name": "Keyboard Navigation Test",
+      "category": "interface",
+      "priority": "medium",
+      "description": "Test keyboard accessibility",
+      "steps": [
+        "Navigate application using only keyboard",
+        "Verify Tab key moves between interactive elements",
+        "Check Enter/Space activate buttons",
+        "Verify focus indicators are visible",
+        "Check skip navigation links exist",
+        "Verify all interactive elements are reachable"
+      ],
+      "expectedOutcome": "Application is fully navigable via keyboard"
+    },
+    {
+      "id": "data-persistence-test",
+      "name": "Data Persistence Test",
+      "category": "functionality",
+      "priority": "high",
+      "description": "Test data persistence after page refresh",
+      "steps": [
+        "Login to application",
+        "Perform actions (search, view property)",
+        "Refresh the page",
+        "Verify user remains logged in",
+        "Check search criteria persists",
+        "Verify authentication token is preserved"
+      ],
+      "expectedOutcome": "User session and relevant data persists across page refreshes"
+    }
+  ],
+  "test_execution_notes": {
+    "seed_data_required": true,
+    "test_users": "Use credentials from test_users.json",
+    "database_state": "Tests assume seed data from db.sql is loaded",
+    "authentication": "Many tests require authenticated user session",
+    "real_time_features": "WebSocket tests may require multiple browser sessions"
+  }
+}
