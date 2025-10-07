@@ -35,7 +35,7 @@ export default defineConfig({
 	],
 	server: {
 		host: true,
-		allowedHosts: true,
+		allowedHosts: ['123airbnb-for-tourists.launchpulse.ai'],
 	},
 	resolve: {
 		alias: {
@@ -44,6 +44,17 @@ export default defineConfig({
 		},
 	},
 	build: {
-		outDir: "public",
+		outDir: "dist",
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					vendor: ['react', 'react-dom'],
+					router: ['react-router-dom'],
+					ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+				},
+			},
+		},
+		chunkSizeWarningLimit: 1000,
 	},
+	publicDir: 'public',
 });

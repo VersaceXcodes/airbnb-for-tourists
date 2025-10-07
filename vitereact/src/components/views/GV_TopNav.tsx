@@ -42,9 +42,9 @@ const GV_TopNav: React.FC = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+      <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50" role="navigation" aria-label="Main navigation">
         <div className="container mx-auto px-4 lg:px-8 flex justify-between items-center h-16">
-          <Link to="/" className="text-xl font-bold text-blue-600 hover:text-blue-700">
+          <Link to="/" className="text-xl font-bold text-blue-600 hover:text-blue-700" aria-label="Home - Airbnb for Tourists">
             BrandLogo
           </Link>
           <div className="flex space-x-4">
@@ -53,12 +53,14 @@ const GV_TopNav: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Search"
+              placeholder="Search destinations"
+              aria-label="Search for destinations"
               className="px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             />
             <button
               onClick={handleSearch}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200"
+              aria-label="Search for destinations"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             >
               Search
             </button>

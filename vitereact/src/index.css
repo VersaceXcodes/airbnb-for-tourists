@@ -49,6 +49,33 @@
 	/* Horizontal scrollbar thumb height */
 }
 
+/* Loading spinner animation */
+.loader {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Screen reader only class for accessibility */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 @layer base {
 	:root {
 		--radius: 0.5rem;

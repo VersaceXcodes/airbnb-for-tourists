@@ -29,8 +29,9 @@ const queryClient = new QueryClient({
 
 // Loading Spinner
 const LoadingSpinner: React.FC = () => (
-  <div className="flex justify-center items-center h-screen">
-    <div className="loader ease-linear rounded-full border-t-4 border-b-4 border-gray-900 h-12 w-12"></div>
+  <div className="flex justify-center items-center h-screen" role="status" aria-label="Loading">
+    <div className="loader ease-linear rounded-full border-t-4 border-b-4 border-gray-900 h-12 w-12" aria-hidden="true"></div>
+    <span className="sr-only">Loading...</span>
   </div>
 );
 
