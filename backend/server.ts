@@ -3,7 +3,7 @@ import cors from "cors";
 import * as dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { Pool } from 'pg';
+import { PGlite } from '@electric-sql/pglite';
 import jwt from 'jsonwebtoken';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
@@ -68,24 +68,99 @@ function createErrorResponse(
   return response;
 }
 
-// Database setup
-const { DATABASE_URL, PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT = 5432, JWT_SECRET = 'your-secret-key' } = process.env;
+// Database setup using PGlite for development
+const { JWT_SECRET = 'your-secret-key' } = process.env;
 
-const pool = new Pool(
-  DATABASE_URL
-    ? { 
-        connectionString: DATABASE_URL, 
-        ssl: { require: true } 
-      }
-    : {
-        host: PGHOST,
-        database: PGDATABASE,
-        user: PGUSER,
-        password: PGPASSWORD,
-        port: Number(PGPORT),
-        ssl: { require: true },
-      }
+const db = new PGlite('./db');
+
+// Initialize database with schema
+await db.exec(`
+CREATE TABLE IF NOT EXISTS users (
+    user_id VARCHAR PRIMARY KEY,
+    email VARCHAR UNIQUE NOT NULL,
+    password_hash VARCHAR NOT NULL,
+    name VARCHAR NOT NULL,
+    created_at VARCHAR NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS properties (
+    property_id VARCHAR PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    location VARCHAR NOT NULL,
+    host_id VARCHAR NOT NULL REFERENCES users(user_id),
+    description TEXT,
+    accommodation_type VARCHAR NOT NULL,
+    amenities TEXT[],
+    price DECIMAL NOT NULL,
+    images JSON
+);
+
+CREATE TABLE IF NOT EXISTS bookings (
+    booking_id VARCHAR PRIMARY KEY,
+    property_id VARCHAR NOT NULL REFERENCES properties(property_id),
+    user_id VARCHAR NOT NULL REFERENCES users(user_id),
+    start_date VARCHAR NOT NULL,
+    end_date VARCHAR NOT NULL,
+    guests INTEGER NOT NULL,
+    total_price DECIMAL NOT NULL,
+    is_paid BOOLEAN NOT NULL,
+    payment_error_message TEXT
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+    review_id VARCHAR PRIMARY KEY,
+    property_id VARCHAR NOT NULL REFERENCES properties(property_id),
+    user_id VARCHAR NOT NULL REFERENCES users(user_id),
+    rating INTEGER NOT NULL,
+    comment TEXT,
+    created_at VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+    message_id VARCHAR PRIMARY KEY,
+    sender_id VARCHAR NOT NULL REFERENCES users(user_id),
+    recipient_id VARCHAR NOT NULL REFERENCES users(user_id),
+    property_id VARCHAR REFERENCES properties(property_id),
+    content TEXT NOT NULL,
+    timestamp VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS auth_tokens (
+    token_id VARCHAR PRIMARY KEY,
+    user_id VARCHAR NOT NULL REFERENCES users(user_id),
+    token VARCHAR NOT NULL,
+    is_valid BOOLEAN NOT NULL,
+    created_at VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS searches (
+    search_id VARCHAR PRIMARY KEY,
+    user_id VARCHAR REFERENCES users(user_id),
+    location VARCHAR NOT NULL,
+    price_min DECIMAL NOT NULL,
+    price_max DECIMAL NOT NULL,
+    start_date VARCHAR NOT NULL,
+    end_date VARCHAR NOT NULL,
+    accommodation_type VARCHAR,
+    amenities TEXT[]
+);
+
+-- Insert seed data
+INSERT INTO users (user_id, email, password_hash, name, created_at) VALUES
+('user1', 'johndoe@example.com', 'password123', 'John Doe', '2023-10-20T10:00:00Z'),
+('user2', 'janedoe@example.com', 'admin123', 'Jane Doe', '2023-10-21T11:00:00Z')
+ON CONFLICT (user_id) DO NOTHING;
+
+INSERT INTO properties (property_id, name, location, host_id, description, accommodation_type, amenities, price, images) VALUES
+('property1', 'Cozy Cottage', 'Countryside', 'user1', 'A quaint little cottage away from the city.', 'Cottage', '{"Fireplace", "WiFi", "Parking"}', 120.00, '{"urls": ["https://picsum.photos/200/300?random=1", "https://picsum.photos/200/300?random=2"]}'),
+('property2', 'City Apartment', 'Downtown', 'user2', 'Modern apartment in the heart of the city.', 'Apartment', '{"Elevator", "Gym", "WiFi"}', 150.00, '{"urls": ["https://picsum.photos/200/300?random=3", "https://picsum.photos/200/300?random=4"]}')
+ON CONFLICT (property_id) DO NOTHING;
+
+INSERT INTO bookings (booking_id, property_id, user_id, start_date, end_date, guests, total_price, is_paid, payment_error_message) VALUES
+('booking1', 'property1', 'user2', '2023-10-23', '2023-10-28', 2, 600.00, TRUE, NULL),
+('booking2', 'property2', 'user1', '2023-11-01', '2023-11-05', 3, 900.00, FALSE, 'Payment failed due to insufficient funds.')
+ON CONFLICT (booking_id) DO NOTHING;
+`);
 
 const app = express();
 const server = createServer(app);
@@ -123,7 +198,7 @@ const authenticateToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const result = await pool.query('SELECT user_id, email, name, created_at FROM users WHERE user_id = $1', [decoded.user_id]);
+    const result = await db.query('SELECT user_id, email, name, created_at FROM users WHERE user_id = $1', [decoded.user_id]);
     
     if (result.rows.length === 0) {
       return res.status(401).json(createErrorResponse('Invalid token', null, 'AUTH_TOKEN_INVALID'));
@@ -148,7 +223,7 @@ const authenticateSocket = async (socket, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    const result = await pool.query('SELECT user_id, email, name FROM users WHERE user_id = $1', [decoded.user_id]);
+    const result = await db.query('SELECT user_id, email, name FROM users WHERE user_id = $1', [decoded.user_id]);
     
     if (result.rows.length === 0) {
       return next(new Error('Authentication error'));
@@ -173,7 +248,7 @@ app.post('/api/auth/register', async (req, res) => {
     const { email, password_hash: password, name } = validatedData;
 
     // Check if user already exists
-    const existingUser = await pool.query('SELECT user_id FROM users WHERE email = $1', [email]);
+    const existingUser = await db.query('SELECT user_id FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
       return res.status(400).json(createErrorResponse('User with this email already exists', null, 'USER_ALREADY_EXISTS'));
     }
@@ -182,7 +257,7 @@ app.post('/api/auth/register', async (req, res) => {
     const user_id = uuidv4();
     const created_at = new Date().toISOString();
     
-    const result = await pool.query(
+    const result = await db.query(
       'INSERT INTO users (user_id, email, password_hash, name, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, email, name, created_at',
       [user_id, email.toLowerCase().trim(), password, name.trim(), created_at]
     );
@@ -198,7 +273,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Create auth token record
     const token_id = uuidv4();
-    await pool.query(
+    await db.query(
       'INSERT INTO auth_tokens (token_id, user_id, token, is_valid, created_at) VALUES ($1, $2, $3, $4, $5)',
       [token_id, user.user_id, token, true, created_at]
     );
@@ -242,7 +317,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Find user (direct password comparison for development)
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+    const result = await db.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
     if (result.rows.length === 0) {
       return res.status(400).json(createErrorResponse('Invalid email or password', null, 'INVALID_CREDENTIALS'));
     }
@@ -264,7 +339,7 @@ app.post('/api/auth/login', async (req, res) => {
     // Create auth token record
     const token_id = uuidv4();
     const created_at = new Date().toISOString();
-    await pool.query(
+    await db.query(
       'INSERT INTO auth_tokens (token_id, user_id, token, is_valid, created_at) VALUES ($1, $2, $3, $4, $5)',
       [token_id, user.user_id, token, true, created_at]
     );
@@ -291,7 +366,7 @@ app.get('/api/users/:user_id', authenticateToken, async (req, res) => {
   try {
     const { user_id } = req.params;
     
-    const result = await pool.query('SELECT user_id, email, name, created_at FROM users WHERE user_id = $1', [user_id]);
+    const result = await db.query('SELECT user_id, email, name, created_at FROM users WHERE user_id = $1', [user_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('User not found', null, 'USER_NOT_FOUND'));
@@ -316,49 +391,66 @@ app.get('/api/properties', async (req, res) => {
       price_max,
       accommodation_type,
       amenities,
-      limit = 10,
-      offset = 0
+      limit = '10',
+      offset = '0'
     } = req.query;
 
-    // Validate required location parameter
-    if (!location) {
-      return res.status(400).json(createErrorResponse('Location parameter is required', null, 'MISSING_LOCATION'));
-    }
+    // Make location optional for general browsing
+    let query = 'SELECT * FROM properties';
+    let queryParams = [];
+    let paramIndex = 1;
+    let conditions = [];
 
-    let query = 'SELECT * FROM properties WHERE location ILIKE $1';
-    let queryParams = [`%${location}%`];
-    let paramIndex = 2;
-
-    // Add optional filters
-    if (price_min !== undefined) {
-      query += ` AND price >= $${paramIndex}`;
-      queryParams.push(parseFloat(price_min));
+    if (location) {
+      conditions.push(`location ILIKE $${paramIndex}`);
+      queryParams.push(`%${location}%`);
       paramIndex++;
     }
 
-    if (price_max !== undefined) {
-      query += ` AND price <= $${paramIndex}`;
-      queryParams.push(parseFloat(price_max));
-      paramIndex++;
+    // Add optional filters with proper type coercion
+    if (price_min !== undefined && price_min !== '') {
+      const priceMinNum = parseFloat(price_min as string);
+      if (!isNaN(priceMinNum)) {
+        conditions.push(`price >= $${paramIndex}`);
+        queryParams.push(priceMinNum);
+        paramIndex++;
+      }
     }
 
-    if (accommodation_type) {
-      query += ` AND accommodation_type ILIKE $${paramIndex}`;
+    if (price_max !== undefined && price_max !== '') {
+      const priceMaxNum = parseFloat(price_max as string);
+      if (!isNaN(priceMaxNum)) {
+        conditions.push(`price <= $${paramIndex}`);
+        queryParams.push(priceMaxNum);
+        paramIndex++;
+      }
+    }
+
+    if (accommodation_type && accommodation_type !== '') {
+      conditions.push(`accommodation_type ILIKE $${paramIndex}`);
       queryParams.push(`%${accommodation_type}%`);
       paramIndex++;
     }
 
     if (amenities && Array.isArray(amenities)) {
-      query += ` AND amenities && $${paramIndex}`;
+      conditions.push(`amenities && $${paramIndex}`);
       queryParams.push(amenities);
       paramIndex++;
     }
 
-    // Add pagination
-    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    queryParams.push(parseInt(limit), parseInt(offset));
+    // Add WHERE clause if there are conditions
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
 
-    const result = await pool.query(query, queryParams);
+    // Add pagination with coercion
+    const limitNum = Math.min(Math.max(parseInt(limit as string) || 10, 1), 100);
+    const offsetNum = Math.max(parseInt(offset as string) || 0, 0);
+    
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    queryParams.push(limitNum, offsetNum);
+
+    const result = await db.query(query, queryParams);
     res.json(result.rows);
 
   } catch (error) {
@@ -375,7 +467,7 @@ app.get('/api/properties/:property_id', async (req, res) => {
   try {
     const { property_id } = req.params;
     
-    const result = await pool.query('SELECT * FROM properties WHERE property_id = $1', [property_id]);
+    const result = await db.query('SELECT * FROM properties WHERE property_id = $1', [property_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Property not found', null, 'PROPERTY_NOT_FOUND'));
@@ -398,7 +490,7 @@ app.patch('/api/properties/:property_id', authenticateToken, async (req, res) =>
     const validatedData = updatePropertyInputSchema.parse(req.body);
 
     // Check if property exists and user is the host
-    const propertyCheck = await pool.query('SELECT host_id FROM properties WHERE property_id = $1', [property_id]);
+    const propertyCheck = await db.query('SELECT host_id FROM properties WHERE property_id = $1', [property_id]);
     if (propertyCheck.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Property not found', null, 'PROPERTY_NOT_FOUND'));
     }
@@ -427,7 +519,7 @@ app.patch('/api/properties/:property_id', authenticateToken, async (req, res) =>
     updateValues.push(property_id);
     const query = `UPDATE properties SET ${updateFields.join(', ')} WHERE property_id = $${paramIndex} RETURNING *`;
 
-    const result = await pool.query(query, updateValues);
+    const result = await db.query(query, updateValues);
     res.json(result.rows[0]);
 
     // Emit real-time event
@@ -452,13 +544,13 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
     const { property_id, user_id, start_date, end_date, guests, total_price, is_paid, payment_error_message } = validatedData;
 
     // Verify property exists
-    const propertyCheck = await pool.query('SELECT property_id FROM properties WHERE property_id = $1', [property_id]);
+    const propertyCheck = await db.query('SELECT property_id FROM properties WHERE property_id = $1', [property_id]);
     if (propertyCheck.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Property not found', null, 'PROPERTY_NOT_FOUND'));
     }
 
     // Check for booking conflicts
-    const conflictCheck = await pool.query(
+    const conflictCheck = await db.query(
       'SELECT booking_id FROM bookings WHERE property_id = $1 AND ((start_date <= $2 AND end_date >= $2) OR (start_date <= $3 AND end_date >= $3) OR (start_date >= $2 AND end_date <= $3))',
       [property_id, start_date, end_date]
     );
@@ -468,7 +560,7 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
     }
 
     const booking_id = uuidv4();
-    const result = await pool.query(
+    const result = await db.query(
       'INSERT INTO bookings (booking_id, property_id, user_id, start_date, end_date, guests, total_price, is_paid, payment_error_message) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
       [booking_id, property_id, user_id, start_date, end_date, guests, total_price, is_paid, payment_error_message]
     );
@@ -497,7 +589,7 @@ app.patch('/api/bookings/:booking_id', authenticateToken, async (req, res) => {
     const validatedData = updateBookingInputSchema.parse(req.body);
 
     // Check if booking exists and user has permission
-    const bookingCheck = await pool.query('SELECT user_id FROM bookings WHERE booking_id = $1', [booking_id]);
+    const bookingCheck = await db.query('SELECT user_id FROM bookings WHERE booking_id = $1', [booking_id]);
     if (bookingCheck.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Booking not found', null, 'BOOKING_NOT_FOUND'));
     }
@@ -526,7 +618,7 @@ app.patch('/api/bookings/:booking_id', authenticateToken, async (req, res) => {
     updateValues.push(booking_id);
     const query = `UPDATE bookings SET ${updateFields.join(', ')} WHERE booking_id = $${paramIndex} RETURNING *`;
 
-    const result = await pool.query(query, updateValues);
+    const result = await db.query(query, updateValues);
     res.json(result.rows[0]);
 
     // Emit real-time event
@@ -551,7 +643,7 @@ app.post('/api/reviews', authenticateToken, async (req, res) => {
     const { property_id, user_id, rating, comment } = validatedData;
 
     // Verify user has a completed booking for this property
-    const bookingCheck = await pool.query(
+    const bookingCheck = await db.query(
       'SELECT booking_id FROM bookings WHERE property_id = $1 AND user_id = $2 AND end_date < NOW()',
       [property_id, user_id]
     );
@@ -561,7 +653,7 @@ app.post('/api/reviews', authenticateToken, async (req, res) => {
     }
 
     // Check if user already reviewed this property
-    const existingReview = await pool.query(
+    const existingReview = await db.query(
       'SELECT review_id FROM reviews WHERE property_id = $1 AND user_id = $2',
       [property_id, user_id]
     );
@@ -573,7 +665,7 @@ app.post('/api/reviews', authenticateToken, async (req, res) => {
     const review_id = uuidv4();
     const created_at = new Date().toISOString();
     
-    const result = await pool.query(
+    const result = await db.query(
       'INSERT INTO reviews (review_id, property_id, user_id, rating, comment, created_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
       [review_id, property_id, user_id, rating, comment, created_at]
     );
@@ -607,7 +699,7 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     }
 
     // Verify recipient exists
-    const recipientCheck = await pool.query('SELECT user_id FROM users WHERE user_id = $1', [recipient_id]);
+    const recipientCheck = await db.query('SELECT user_id FROM users WHERE user_id = $1', [recipient_id]);
     if (recipientCheck.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Recipient not found', null, 'RECIPIENT_NOT_FOUND'));
     }
@@ -615,7 +707,7 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     const message_id = uuidv4();
     const timestamp = new Date().toISOString();
     
-    const result = await pool.query(
+    const result = await db.query(
       'INSERT INTO messages (message_id, sender_id, recipient_id, property_id, content, timestamp) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
       [message_id, sender_id, recipient_id, property_id, content, timestamp]
     );
@@ -644,7 +736,7 @@ app.patch('/api/messages/:message_id', authenticateToken, async (req, res) => {
     const validatedData = updateMessageInputSchema.parse(req.body);
 
     // Check if message exists and user is the sender
-    const messageCheck = await pool.query('SELECT sender_id FROM messages WHERE message_id = $1', [message_id]);
+    const messageCheck = await db.query('SELECT sender_id FROM messages WHERE message_id = $1', [message_id]);
     if (messageCheck.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Message not found', null, 'MESSAGE_NOT_FOUND'));
     }
@@ -654,7 +746,7 @@ app.patch('/api/messages/:message_id', authenticateToken, async (req, res) => {
     }
 
     const { content } = validatedData;
-    const result = await pool.query(
+    const result = await db.query(
       'UPDATE messages SET content = $1 WHERE message_id = $2 RETURNING *',
       [content, message_id]
     );
@@ -696,7 +788,7 @@ io.on('connection', (socket) => {
       const { recipient_id, property_id, content } = data;
       
       // Verify recipient exists
-      const recipientCheck = await pool.query('SELECT user_id FROM users WHERE user_id = $1', [recipient_id]);
+      const recipientCheck = await db.query('SELECT user_id FROM users WHERE user_id = $1', [recipient_id]);
       if (recipientCheck.rows.length === 0) {
         socket.emit('error', { message: 'Recipient not found' });
         return;
@@ -705,7 +797,7 @@ io.on('connection', (socket) => {
       const message_id = uuidv4();
       const timestamp = new Date().toISOString();
       
-      const result = await pool.query(
+      const result = await db.query(
         'INSERT INTO messages (message_id, sender_id, recipient_id, property_id, content, timestamp) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
         [message_id, socket.user.user_id, recipient_id, property_id, content, timestamp]
       );
@@ -743,7 +835,7 @@ app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-export { app, pool };
+export { app, db };
 
 // Start the server
 server.listen(port, '0.0.0.0', () => {
