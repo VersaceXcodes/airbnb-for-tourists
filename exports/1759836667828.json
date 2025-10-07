@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759836667828,
+  "operation": {
+    "id": "webapp:react:store",
+    "refs": {
+      "id": "redux",
+      "version": "latest"
+    }
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/src/store/main.tsx",
+      "type": "text",
+      "size": 7705,
+      "dependencies": false
+    }
+  ]
+}

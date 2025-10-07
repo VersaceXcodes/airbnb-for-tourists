@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759836377951,
+  "operation": {
+    "id": "backend:specifications:openapi"
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/backend/openapi.yaml",
+      "type": "text",
+      "size": 10388,
+      "dependencies": false
+    }
+  ]
+}

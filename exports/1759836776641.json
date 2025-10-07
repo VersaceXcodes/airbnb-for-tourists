@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759836776641,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_HostDashboard",
+      "version": "latest"
+    }
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/src/components/views/UV_HostDashboard.tsx",
+      "type": "text",
+      "size": 4687,
+      "dependencies": false
+    }
+  ]
+}

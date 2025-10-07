@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759836340303,
+  "operation": {
+    "id": "backend:specifications:asyncapi"
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/backend/asyncapi.yaml",
+      "type": "text",
+      "size": 4714,
+      "dependencies": false
+    }
+  ]
+}

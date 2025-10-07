@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759836640960,
+  "operation": {
+    "id": "settings:config:package"
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/backend/package.json",
+      "type": "text",
+      "size": 1443,
+      "dependencies": true
+    }
+  ]
+}

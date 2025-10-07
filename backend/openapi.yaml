@@ -1,0 +1,438 @@
+openapi: 3.0.0
+info:
+  title: Airbnb for Tourists API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Development server
+paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserInput"
+      responses:
+        "200":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+  /api/auth/login:
+    post:
+      summary: User login
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+  /api/users/{user_id}:
+    get:
+      summary: Get user profile
+      operationId: getUserProfile
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /api/properties:
+    get:
+      summary: Search properties
+      operationId: searchProperties
+      parameters:
+        - name: location
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: price_min
+          in: query
+          schema:
+            type: number
+        - name: price_max
+          in: query
+          schema:
+            type: number
+        - name: accommodation_type
+          in: query
+          schema:
+            type: string
+        - name: amenities
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Properties retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+  /api/properties/{property_id}:
+    get:
+      summary: Get property details
+      operationId: getPropertyDetails
+      parameters:
+        - name: property_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Property details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+    patch:
+      summary: Update property details
+      operationId: updateProperty
+      parameters:
+        - name: property_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePropertyInput"
+      responses:
+        "200":
+          description: Property updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+  /api/bookings:
+    post:
+      summary: Create a new booking
+      operationId: createBooking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingInput"
+      responses:
+        "200":
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+  /api/bookings/{booking_id}:
+    patch:
+      summary: Update booking details
+      operationId: updateBooking
+      parameters:
+        - name: booking_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookingInput"
+      responses:
+        "200":
+          description: Booking updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+  /api/reviews:
+    post:
+      summary: Submit a new review
+      operationId: createReview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewInput"
+      responses:
+        "200":
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+  /api/messages:
+    post:
+      summary: Send a new message
+      operationId: createMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMessageInput"
+      responses:
+        "200":
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+  /api/messages/{message_id}:
+    patch:
+      summary: Update a message
+      operationId: updateMessage
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMessageInput"
+      responses:
+        "200":
+          description: Message updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+        password_hash:
+          type: string
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    CreateUserInput:
+      type: object
+      properties:
+        email:
+          type: string
+        password_hash:
+          type: string
+        name:
+          type: string
+    AuthToken:
+      type: object
+      properties:
+        token_id:
+          type: string
+        user_id:
+          type: string
+        token:
+          type: string
+        is_valid:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    Property:
+      type: object
+      properties:
+        property_id:
+          type: string
+        name:
+          type: string
+        location:
+          type: string
+        host_id:
+          type: string
+        description:
+          type: string
+          nullable: true
+        accommodation_type:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+          nullable: true
+        price:
+          type: number
+        images:
+          type: object
+          nullable: true
+    UpdatePropertyInput:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+        accommodation_type:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+          nullable: true
+        price:
+          type: number
+        images:
+          type: object
+          nullable: true
+    CreateBookingInput:
+      type: object
+      properties:
+        property_id:
+          type: string
+        user_id:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+        guests:
+          type: integer
+        total_price:
+          type: number
+        is_paid:
+          type: boolean
+        payment_error_message:
+          type: string
+          nullable: true
+    Booking:
+      type: object
+      properties:
+        booking_id:
+          type: string
+        property_id:
+          type: string
+        user_id:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        guests:
+          type: integer
+        total_price:
+          type: number
+        is_paid:
+          type: boolean
+        payment_error_message:
+          type: string
+          nullable: true
+    CreateReviewInput:
+      type: object
+      properties:
+        property_id:
+          type: string
+        user_id:
+          type: string
+        rating:
+          type: integer
+        comment:
+          type: string
+          nullable: true
+    Review:
+      type: object
+      properties:
+        review_id:
+          type: string
+        property_id:
+          type: string
+        user_id:
+          type: string
+        rating:
+          type: integer
+        comment:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    CreateMessageInput:
+      type: object
+      properties:
+        sender_id:
+          type: string
+        recipient_id:
+          type: string
+        property_id:
+          type: string
+          nullable: true
+        content:
+          type: string
+    UpdateMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+    Message:
+      type: object
+      properties:
+        message_id:
+          type: string
+        sender_id:
+          type: string
+        recipient_id:
+          type: string
+        property_id:
+          type: string
+          nullable: true
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time

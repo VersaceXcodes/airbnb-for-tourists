@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759836778852,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_LoginSignup",
+      "version": "latest"
+    }
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/src/components/views/UV_LoginSignup.tsx",
+      "type": "text",
+      "size": 6165,
+      "dependencies": false
+    }
+  ]
+}

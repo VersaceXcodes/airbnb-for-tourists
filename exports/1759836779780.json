@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759836779780,
+  "operation": {
+    "id": "settings:config:package"
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/package.json",
+      "type": "text",
+      "size": 2992,
+      "dependencies": true
+    }
+  ]
+}

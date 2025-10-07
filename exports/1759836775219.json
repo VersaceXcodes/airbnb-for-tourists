@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759836775219,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_HelpCenter",
+      "version": "1759836723982"
+    }
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/src/components/views/UV_HelpCenter.tsx",
+      "type": "text",
+      "size": 3803,
+      "dependencies": false
+    }
+  ]
+}

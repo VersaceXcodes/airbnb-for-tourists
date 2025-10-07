@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759836805574,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_LandingPage",
+      "version": "latest"
+    }
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/src/components/views/UV_LandingPage.tsx",
+      "type": "text",
+      "size": 4860,
+      "dependencies": false
+    }
+  ]
+}

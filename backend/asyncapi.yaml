@@ -1,0 +1,214 @@
+asyncapi: 2.0.0
+info:
+  title: Airbnb for Tourists Realtime API
+  version: 1.0.0
+  description: AsyncAPI specification for real-time features in the Airbnb for
+    Tourists application.
+servers:
+  - url: http://localhost:3000
+    protocol: ws
+channels:
+  user/update:
+    description: Channel for user updates
+    publish:
+      operationId: onUpdateUser
+      message:
+        name: User
+        payload:
+          $ref: "#/components/schemas/User"
+  property/update:
+    description: Channel for property updates
+    publish:
+      operationId: onUpdateProperty
+      message:
+        name: Property
+        payload:
+          $ref: "#/components/schemas/Property"
+  booking/update:
+    description: Channel for booking updates
+    publish:
+      operationId: onUpdateBooking
+      message:
+        name: Booking
+        payload:
+          $ref: "#/components/schemas/Booking"
+  review/add:
+    description: Channel for adding a new review
+    publish:
+      operationId: onAddReview
+      message:
+        name: Review
+        payload:
+          $ref: "#/components/schemas/Review"
+  message/send:
+    description: Channel for sending messages between users
+    publish:
+      operationId: onSendMessage
+      message:
+        name: Message
+        payload:
+          $ref: "#/components/schemas/Message"
+  auth/token/generate:
+    description: Channel for generating authentication tokens
+    publish:
+      operationId: onGenerateAuthToken
+      message:
+        name: AuthToken
+        payload:
+          $ref: "#/components/schemas/AuthToken"
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+          format: email
+        password_hash:
+          type: string
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - user_id
+        - email
+        - password_hash
+        - name
+        - created_at
+    Property:
+      type: object
+      properties:
+        property_id:
+          type: string
+        name:
+          type: string
+        location:
+          type: string
+        host_id:
+          type: string
+        description:
+          type: string
+          nullable: true
+        accommodation_type:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+          nullable: true
+        price:
+          type: number
+        images:
+          type: object
+          nullable: true
+      required:
+        - property_id
+        - name
+        - location
+        - host_id
+        - accommodation_type
+        - price
+    Booking:
+      type: object
+      properties:
+        booking_id:
+          type: string
+        property_id:
+          type: string
+        user_id:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        guests:
+          type: number
+        total_price:
+          type: number
+        is_paid:
+          type: boolean
+        payment_error_message:
+          type: string
+          nullable: true
+      required:
+        - booking_id
+        - property_id
+        - user_id
+        - start_date
+        - end_date
+        - guests
+        - total_price
+        - is_paid
+    Review:
+      type: object
+      properties:
+        review_id:
+          type: string
+        property_id:
+          type: string
+        user_id:
+          type: string
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - review_id
+        - property_id
+        - user_id
+        - rating
+        - created_at
+    Message:
+      type: object
+      properties:
+        message_id:
+          type: string
+        sender_id:
+          type: string
+        recipient_id:
+          type: string
+        property_id:
+          type: string
+          nullable: true
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - message_id
+        - sender_id
+        - recipient_id
+        - content
+    AuthToken:
+      type: object
+      properties:
+        token_id:
+          type: string
+        user_id:
+          type: string
+        token:
+          type: string
+        is_valid:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - token_id
+        - user_id
+        - token
+        - is_valid
+        - created_at

@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759836766706,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_Footer",
+      "version": "1759836724043"
+    }
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/src/components/views/GV_Footer.tsx",
+      "type": "text",
+      "size": 2897,
+      "dependencies": false
+    }
+  ]
+}

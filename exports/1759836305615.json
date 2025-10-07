@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759836305615,
+  "operation": {
+    "id": "db:schemas:zod"
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/backend/schema.ts",
+      "type": "text",
+      "size": 10713,
+      "dependencies": false
+    }
+  ]
+}

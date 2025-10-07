@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759836790414,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_BookingFlow",
+      "version": "latest"
+    }
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/src/components/views/UV_BookingFlow.tsx",
+      "type": "text",
+      "size": 4652,
+      "dependencies": false
+    }
+  ]
+}

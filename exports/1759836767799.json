@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759836767799,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_TopNav",
+      "version": "1759836724032"
+    }
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/src/components/views/GV_TopNav.tsx",
+      "type": "text",
+      "size": 3384,
+      "dependencies": false
+    }
+  ]
+}

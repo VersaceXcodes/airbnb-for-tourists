@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759836769379,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_Notifications",
+      "version": "1759836723991"
+    }
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/vitereact/src/components/views/UV_Notifications.tsx",
+      "type": "text",
+      "size": 3559,
+      "dependencies": false
+    }
+  ]
+}

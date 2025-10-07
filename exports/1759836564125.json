@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759836564125,
+  "operation": {
+    "id": "backend:server:main"
+  },
+  "projectId": "airbnb-for-tourists",
+  "files": [
+    {
+      "path": "/mnt/data/airbnb-for-tourists/backend/server.ts",
+      "type": "text",
+      "size": 24047,
+      "dependencies": false
+    }
+  ]
+}
