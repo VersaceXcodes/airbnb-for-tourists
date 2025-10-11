@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAppStore } from '@/store/main';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import GV_TopNav from '@/components/views/GV_TopNav.tsx';
 import GV_Footer from '@/components/views/GV_Footer.tsx';
 import UV_LandingPage from '@/components/views/UV_LandingPage.tsx';
@@ -64,44 +65,52 @@ const App: React.FC = () => {
   }
 
   return (
-    <Router>
-      <QueryClientProvider client={queryClient}>
-        <div className="flex flex-col min-h-screen">
-          <GV_TopNav />
-          <main className="flex-grow">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<UV_LandingPage />} />
-              <Route path="/auth/login-signup" element={<UV_LoginSignup />} />
-              <Route path="/search" element={<UV_SearchResults />} />
-              <Route path="/property/:property_id" element={<UV_PropertyDetails />} />
-              <Route path="/help-center" element={<UV_HelpCenter />} />
+    <ErrorBoundary>
+      <Router>
+        <QueryClientProvider client={queryClient}>
+          <div className="flex flex-col min-h-screen">
+            <ErrorBoundary>
+              <GV_TopNav />
+            </ErrorBoundary>
+            <main className="flex-grow">
+              <ErrorBoundary>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<UV_LandingPage />} />
+                  <Route path="/auth/login-signup" element={<UV_LoginSignup />} />
+                  <Route path="/search" element={<UV_SearchResults />} />
+                  <Route path="/property/:property_id" element={<UV_PropertyDetails />} />
+                  <Route path="/help-center" element={<UV_HelpCenter />} />
 
-              {/* Protected Routes */}
-              <Route path="/booking" element={
-                <ProtectedRoute>
-                  <UV_BookingFlow />
-                </ProtectedRoute>
-              } />
-              <Route path="/user/profile" element={
-                <ProtectedRoute>
-                  <UV_UserProfile />
-                </ProtectedRoute>
-              } />
-              <Route path="/host/dashboard" element={
-                <ProtectedRoute>
-                  <UV_HostDashboard />
-                </ProtectedRoute>
-              } />
+                  {/* Protected Routes */}
+                  <Route path="/booking" element={
+                    <ProtectedRoute>
+                      <UV_BookingFlow />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/user/profile" element={
+                    <ProtectedRoute>
+                      <UV_UserProfile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/host/dashboard" element={
+                    <ProtectedRoute>
+                      <UV_HostDashboard />
+                    </ProtectedRoute>
+                  } />
 
-              {/* Catch all - redirect to landing page */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-          <GV_Footer />
-        </div>
-      </QueryClientProvider>
-    </Router>
+                  {/* Catch all - redirect to landing page */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </ErrorBoundary>
+            </main>
+            <ErrorBoundary>
+              <GV_Footer />
+            </ErrorBoundary>
+          </div>
+        </QueryClientProvider>
+      </Router>
+    </ErrorBoundary>
   );
 };
 

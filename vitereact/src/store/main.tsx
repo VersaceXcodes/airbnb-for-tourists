@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import axios from 'axios';
+import { logError } from '@/utils/errorHandler';
 
 // User Interface
 interface User {
@@ -109,10 +110,14 @@ export const useAppStore = create<AppState>()(
         }));
 
         try {
+          const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://123airbnb-for-tourists.launchpulse.ai';
           const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/login`,
+            `${baseURL}/api/auth/login`,
             { email, password },
-            { headers: { 'Content-Type': 'application/json' } }
+            { 
+              headers: { 'Content-Type': 'application/json' },
+              timeout: 10000 // 10 second timeout
+            }
           );
 
           const { user, token } = response.data;
@@ -129,6 +134,7 @@ export const useAppStore = create<AppState>()(
             },
           }));
         } catch (error: any) {
+          logError(error, 'Login');
           const errorMessage = error.response?.data?.message || error.message || 'Login failed';
 
           set(() => ({
@@ -159,10 +165,14 @@ export const useAppStore = create<AppState>()(
             },
           }));
 
+          const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://123airbnb-for-tourists.launchpulse.ai';
           const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`,
+            `${baseURL}/api/auth/register`,
             { email, password, name },
-            { headers: { 'Content-Type': 'application/json' } }
+            { 
+              headers: { 'Content-Type': 'application/json' },
+              timeout: 10000 // 10 second timeout
+            }
           );
 
           const { user, token } = response.data;
@@ -179,6 +189,7 @@ export const useAppStore = create<AppState>()(
             },
           }));
         } catch (error: any) {
+          logError(error, 'Registration');
           const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
 
           set(() => ({
@@ -215,9 +226,13 @@ export const useAppStore = create<AppState>()(
         }
 
         try {
+          const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://123airbnb-for-tourists.launchpulse.ai';
           const response = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/verify`,
-            { headers: { Authorization: `Bearer ${token}` } }
+            `${baseURL}/api/auth/verify`,
+            { 
+              headers: { Authorization: `Bearer ${token}` },
+              timeout: 10000 // 10 second timeout
+            }
           );
 
           const { user } = response.data;
@@ -233,7 +248,8 @@ export const useAppStore = create<AppState>()(
               error_message: null,
             },
           }));
-        } catch {
+        } catch (error: any) {
+          logError(error, 'Auth verification');
           set(() => ({
             authentication_state: {
               current_user: null,
