@@ -9,7 +9,7 @@ export const propertySchema = z.object({
   description: z.string().nullable(),
   accommodation_type: z.string(),
   amenities: z.array(z.string()).nullable(),
-  price: z.number(),
+  price: z.string().transform((val) => parseFloat(val)),
   images: z.object({}).nullable()
 });
 

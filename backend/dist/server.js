@@ -811,6 +811,38 @@ app.get('/api/hosts/:host_id/calendar', authenticateToken, async (req, res) => {
         res.status(500).json(createErrorResponse('Internal server error', error, 'INTERNAL_SERVER_ERROR'));
     }
 });
+/*
+  Notifications Endpoint
+  Returns mock notifications for authenticated users
+*/
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+    try {
+        // Mock notifications data
+        const mockNotifications = [
+            {
+                id: 'notif1',
+                type: 'booking',
+                title: 'New Booking Request',
+                message: 'You have a new booking request for your property',
+                timestamp: new Date().toISOString(),
+                read: false
+            },
+            {
+                id: 'notif2',
+                type: 'message',
+                title: 'New Message',
+                message: 'You have a new message from a guest',
+                timestamp: new Date(Date.now() - 3600000).toISOString(),
+                read: true
+            }
+        ];
+        res.json(mockNotifications);
+    }
+    catch (error) {
+        console.error('Get notifications error:', error);
+        res.status(500).json(createErrorResponse('Internal server error', error, 'INTERNAL_SERVER_ERROR'));
+    }
+});
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({
@@ -833,7 +865,8 @@ app.get('/api', (req, res) => {
             '/api/auth/register',
             '/api/auth/verify',
             '/api/properties',
-            '/api/bookings'
+            '/api/bookings',
+            '/api/notifications'
         ]
     });
 });
