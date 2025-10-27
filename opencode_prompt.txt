@@ -3,7 +3,7 @@ Fix the following issues found during browser testing:
 1. Functional Application Test:
    Problem: Browser agent detected errors during execution
    Priority: critical
-   Attempts: 2
+   Attempts: 3
 
 Please focus on:
 - Analyzing console errors and warnings above
