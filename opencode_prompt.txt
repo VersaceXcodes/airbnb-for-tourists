@@ -1,0 +1,16 @@
+Fix the following issues found during browser testing:
+
+1. Functional Application Test:
+   Problem: Browser agent detected errors during execution
+   Priority: critical
+   Attempts: 1
+
+Please focus on:
+- Analyzing console errors and warnings above
+- Fixing network request failures (502, CORS, timeout, etc.)
+- Ensuring API endpoints return valid JSON
+- Resolving server connectivity issues
+Test URLs:
+- Frontend: https://123airbnb-for-tourists.launchpulse.ai
+- Backend: https://123airbnb-for-tourists.launchpulse.ai
+
