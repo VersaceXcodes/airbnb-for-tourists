@@ -1,9 +1,14 @@
 Fix the following issues found during browser testing:
 
 1. Functional Application Test:
-   Problem: Browser agent detected errors during execution
+   Problem: Browser agent detected errors during execution | Retry limit reached (4 attempts).
    Priority: critical
    Attempts: 4
+
+2. UI Components Test:
+   Problem: Browser agent detected errors during execution
+   Priority: high
+   Attempts: NaN
 
 Please focus on:
 - Analyzing console errors and warnings above
